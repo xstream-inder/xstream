@@ -3,6 +3,7 @@
 import { useState, useTransition, useOptimistic } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useAuthModal } from "@/components/providers/auth-modal-provider";
 import {
   createComment,
   deleteComment,
@@ -28,6 +29,7 @@ export default function CommentItem({
 }: CommentItemProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { openModal } = useAuthModal();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [replyContent, setReplyContent] = useState("");
@@ -58,7 +60,7 @@ export default function CommentItem({
     e.preventDefault();
 
     if (!session?.user) {
-      router.push("/auth/signin");
+      openModal("signin");
       return;
     }
 

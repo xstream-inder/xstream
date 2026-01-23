@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toggleLike } from '@/server/actions/engagement';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/components/providers/auth-modal-provider';
 
 interface LikeButtonProps {
   videoId: string;
@@ -16,6 +17,7 @@ export function LikeButton({
   initialCount,
 }: LikeButtonProps) {
   const router = useRouter();
+  const { openModal } = useAuthModal();
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialCount);
   const [isPending, startTransition] = useTransition();
@@ -40,7 +42,7 @@ export function LikeButton({
         setLikeCount(initialCount);
         
         if (result.error === 'Authentication required') {
-          router.push('/auth/signin');
+          openModal('signin');
         } else {
           alert(result.error || 'Failed to like video');
         }

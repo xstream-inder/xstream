@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/components/providers/auth-modal-provider';
 
 export function UserMenu() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { openModal } = useAuthModal();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,18 +39,18 @@ export function UserMenu() {
   if (!session) {
     return (
       <div className="flex items-center gap-4">
-        <Link
-          href="/auth/signin"
+        <button
+          onClick={() => openModal('signin')}
           className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
         >
           Sign in
-        </Link>
-        <Link
-          href="/auth/signup"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+        </button>
+        <button
+          onClick={() => openModal('signup')}
+          className="px-4 py-2 text-sm font-medium text-white bg-xred-600 rounded-md hover:bg-xred-700"
         >
           Sign up
-        </Link>
+        </button>
       </div>
     );
   }
@@ -59,7 +61,7 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 focus:outline-none"
       >
-        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+        <div className="h-8 w-8 rounded-full bg-xred-600 flex items-center justify-center text-white font-medium">
           {session.user.username?.[0]?.toUpperCase() || 'U'}
         </div>
         <span className="hidden md:inline text-sm font-medium text-gray-900 dark:text-white">

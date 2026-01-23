@@ -13,7 +13,7 @@ interface VideoCardProps {
     thumbnailUrl: string | null;
     duration: number | null;
     viewsCount: number;
-    createdAt: Date;
+    createdAt: Date | string;
     orientation?: string | null;
     user: {
       username: string;
@@ -43,7 +43,8 @@ export function VideoCard({ video }: VideoCardProps) {
     return count.toString();
   };
 
-  const formatTimeAgo = (date: Date): string => {
+  const formatTimeAgo = (dateInput: Date | string): string => {
+    const date = new Date(dateInput);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -66,14 +67,14 @@ export function VideoCard({ video }: VideoCardProps) {
   };
 
   return (
-    <Link
+    <Link 
       href={`/video/${video.id}`}
-      className="group block bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      className="group block"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Thumbnail with Hover Preview */}
-      <div className="relative aspect-video bg-gray-200 dark:bg-gray-700">
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-dark-800">
+        {/* Image / Preview */}
         {isHovering && !previewError ? (
           <Image
             src={getPreviewUrl()}
@@ -82,69 +83,34 @@ export function VideoCard({ video }: VideoCardProps) {
             className="object-cover"
             onError={() => setPreviewError(true)}
             unoptimized
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
           <Image
             src={getThumbnailUrl()}
             alt={video.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover"
             unoptimized
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         )}
 
-        {/* Play icon overlay */}
-        {!isHovering && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-            <svg
-              className="w-16 h-16 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        )}
-        
-        {/* Duration Badge */}
-        {video.duration && (
-          <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded">
-            {formatDuration(video.duration)}
-          </div>
-        )}
-
-        {/* Orientation Badge */}
-        {video.orientation && (
-          <div className="absolute top-2 left-2 px-2 py-1 bg-blue-600/90 text-white text-xs font-medium rounded">
-            {video.orientation}
-          </div>
-        )}
-      </div>
-
-      {/* Video Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2">
-          {video.title}
-        </h3>
-
-        {/* Creator Info */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-            {video.user.username[0].toUpperCase()}
-          </div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            {video.user.username}
-          </span>
+        {/* Quality Badge (Top Right) */}
+        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-xred-500/90 text-white text-[10px] font-bold rounded uppercase tracking-wider">
+          HD
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+        {/* Duration Badge (Bottom Right) */}
+        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/80 text-white text-xs font-medium rounded">
+          {formatDuration(video.duration)}
+        </div>
+      </div>
+
+      {/* Meta */}
+      <div className="mt-2 px-0.5">
+        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-200 line-clamp-2 leading-tight group-hover:text-xred-600 dark:group-hover:text-xred-500 transition-colors">
+          {video.title}
+        </h3>
+        <div className="flex items-center gap-2 mt-1 text-xs text-gray-600 dark:text-gray-400">
           <span>{formatViews(video.viewsCount)} views</span>
           <span>•</span>
           <span>{formatTimeAgo(video.createdAt)}</span>

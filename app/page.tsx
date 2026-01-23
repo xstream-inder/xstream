@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { VideoCard } from '@/components/video/video-card';
+import { CategoryPills } from '@/components/layout/category-pills';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -14,30 +15,32 @@ export default async function HomePage() {
       user: {
         select: {
           username: true,
-          avatarUrl: true,
+          // avatarUrl is currently nullable, but needed for VideoCard
+          avatarUrl: true, 
         },
       },
     },
     orderBy: {
       createdAt: 'desc',
     },
-    take: 24, // Limit to 24 videos for initial load
+    take: 40, // Increase limit for high density grid
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Discover Videos
+    <div className="min-h-screen bg-white dark:bg-dark-900">
+      
+      {/* Sticky Category Helper */}
+      <CategoryPills />
+
+      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 py-4">
+        {/* Header - Hidden on mobile if redundant, or minimal */}
+        <div className="mb-6 hidden md:block">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+            Recomended Videos
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Watch the latest content from creators
-          </p>
         </div>
 
-        {/* Video Grid */}
+        {/* Video Grid - Xhamster Lite Style (2 cols mobile, 4-5 cols desktop) */}
         {videos.length === 0 ? (
           <div className="text-center py-16">
             <svg
@@ -61,37 +64,33 @@ export default async function HomePage() {
             </p>
             <Link
               href="/upload"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-xred-600 text-white font-medium rounded-lg hover:bg-xred-700 transition-colors"
             >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
               Upload Your First Video
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             {videos.map((video) => (
-              <VideoCard key={video.id} video={video} />
+              <VideoCard 
+                key={video.id} 
+                video={{
+                   ...video,
+                   // Ensure types match what VideoCard expects
+                   thumbnailUrl: video.thumbnailUrl || null,
+                   duration: video.duration || null,
+                   orientation: (video.orientation as any) || null
+                }} 
+              />
             ))}
           </div>
         )}
 
-        {/* Load More (optional) */}
-        {videos.length >= 24 && (
+        {/* Load More/Pagination */}
+        {videos.length >= 40 && (
           <div className="mt-8 text-center">
-            <button className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
-              Load More Videos
+            <button className="px-6 py-2.5 bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-200 font-medium rounded-full hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors text-sm">
+              Show more videos
             </button>
           </div>
         )}

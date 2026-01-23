@@ -5,6 +5,7 @@ import { createComment, type CommentWithUser } from "@/server/actions/comment";
 import CommentItem from "./comment-item";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useAuthModal } from "@/components/providers/auth-modal-provider";
 
 type CommentSectionProps = {
   videoId: string;
@@ -19,6 +20,7 @@ export default function CommentSection({
 }: CommentSectionProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { openModal } = useAuthModal();
   const [comments, setComments] = useState<CommentWithUser[]>(initialComments);
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
   const [content, setContent] = useState("");
@@ -38,7 +40,7 @@ export default function CommentSection({
     e.preventDefault();
     
     if (!session?.user) {
-      router.push("/auth/signin");
+      openModal("signin");
       return;
     }
 
@@ -152,7 +154,7 @@ export default function CommentSection({
                 <button
                   type="submit"
                   disabled={isSubmitting || !content.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-xred-600 text-white rounded-lg hover:bg-xred-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Posting..." : "Comment"}
                 </button>
@@ -161,11 +163,11 @@ export default function CommentSection({
           </div>
         </form>
       ) : (
-        <div className="mb-8 p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-center">
-          <p className="text-gray-600 dark:text-gray-400">
+        <div className="mb-8 p-4 border border-border rounded-lg text-center bg-card">
+          <p className="text-muted-foreground">
             <button
-              onClick={() => router.push("/auth/signin")}
-              className="text-blue-600 hover:underline"
+              onClick={() => openModal("signin")}
+              className="text-primary hover:underline font-medium"
             >
               Sign in
             </button>{" "}
