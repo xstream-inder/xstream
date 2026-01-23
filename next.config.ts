@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '100mb',
     },
   },
+  // Explicitly set workspace root to silence warning
+  outputFileTracingRoot: __dirname,
 };
 
 export default nextConfig;

@@ -5,14 +5,15 @@ import Link from 'next/link';
 import { auth } from '@/lib/auth-helper';
 
 interface VideoPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: VideoPageProps) {
+  const { id } = await params;
   const video = await prisma.video.findUnique({
-    where: { id: params.id },
+    where: { id },
     select: { title: true, description: true },
   });
 
@@ -29,11 +30,12 @@ export async function generateMetadata({ params }: VideoPageProps) {
 }
 
 export default async function VideoPage({ params }: VideoPageProps) {
+  const { id } = await params;
   const session = await auth();
 
   // Fetch video with creator info and related videos
   const video = await prisma.video.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       user: {
         select: {
