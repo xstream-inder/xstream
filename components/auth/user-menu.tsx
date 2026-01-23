@@ -1,0 +1,124 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+export function UserMenu() {
+  const { data: session, status } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push('/');
+    router.refresh();
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse" />
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex items-center gap-4">
+        <Link
+          href="/auth/signin"
+          className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/auth/signup"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+        >
+          Sign up
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 focus:outline-none"
+      >
+        <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+          {session.user.username?.[0]?.toUpperCase() || 'U'}
+        </div>
+        <span className="hidden md:inline text-sm font-medium text-gray-900 dark:text-white">
+          {session.user.username}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+          <div className="py-1">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {session.user.username}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {session.user.email}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Role: {session.user.role}
+              </p>
+            </div>
+
+            <Link
+              href="/profile"
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
+              Your Profile
+            </Link>
+
+            {session.user.role === 'CREATOR' || session.user.role === 'ADMIN' ? (
+              <Link
+                href="/upload"
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Upload Video
+              </Link>
+            ) : null}
+
+            <Link
+              href="/settings"
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
+              Settings
+            </Link>
+
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={handleSignOut}
+                className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
