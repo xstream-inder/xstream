@@ -1,11 +1,12 @@
-import type { NextAuthConfig, User, Session } from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import type { JWT } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { compare } from 'bcryptjs';
+import { authConfig } from './auth.config';
 
 export const authOptions: NextAuthConfig = {
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
@@ -54,35 +55,6 @@ export const authOptions: NextAuthConfig = {
       },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  pages: {
-    signIn: '/auth/signin',
-    signOut: '/auth/signout',
-    error: '/auth/error',
-  },
-  callbacks: {
-    async jwt({ token, user }: { token: JWT; user: User }) {
-      if (user) {
-        token.id = user.id;
-        token.username = (user as any).username;
-        token.role = (user as any).role;
-        token.avatarUrl = (user as any).avatarUrl;
-      }
-      return token;
-    },
-    async session({ session, token }: { session: Session; token: JWT }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.username = token.username as string;
-        session.user.role = token.role;
-        session.user.avatarUrl = token.avatarUrl as string | null;
-      }
-      return session;
-    },
-  },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
 };

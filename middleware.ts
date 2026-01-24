@@ -1,25 +1,22 @@
+import NextAuth from 'next-auth';
+import { authConfig } from '@/lib/auth.config';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
-export async function middleware(request: NextRequest) {
-  const token = await getToken({ 
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+const { auth } = NextAuth(authConfig);
 
-  const { pathname } = request.nextUrl;
+export default auth((req) => {
+  const isLoggedIn = !!req.auth;
+  const { pathname } = req.nextUrl;
 
-  // If user is not authenticated and trying to access protected routes
-  if (!token && pathname !== '/auth/signin') {
-    const signInUrl = new URL('/', request.url);
+  if (!isLoggedIn) {
+    const signInUrl = new URL('/', req.nextUrl.origin);
     signInUrl.searchParams.set('auth', 'signin');
     signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
