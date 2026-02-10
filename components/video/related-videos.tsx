@@ -40,11 +40,10 @@ export async function RelatedVideos({ videoId }: RelatedVideosProps) {
       ]
     },
     orderBy: [
-       // Simple mix ranking: Newest first within related cluster
        { viewsCount: 'desc' },
        { createdAt: 'desc' }
     ],
-    take: 12,
+    take: 24, // Increased to support larger grid
     include: {
       user: {
         select: { username: true, avatarUrl: true } 
@@ -54,30 +53,64 @@ export async function RelatedVideos({ videoId }: RelatedVideosProps) {
 
   if (relatedVideos.length === 0) return null;
 
+  // Helper to chunk array
+  const chunkedVideos = [];
+  const chunkSize = 8;
+  for (let i = 0; i < relatedVideos.length; i += chunkSize) {
+    chunkedVideos.push(relatedVideos.slice(i, i + chunkSize));
+  }
+
   return (
     <div className="w-full">
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 px-1">
-        Related Videos
+        You might also like
       </h3>
       
-      {/* 
-        Layout Grid: 
-        Mobile: 1 column (list below player) or 2 columns
-        Desktop: 1 column (vertical sidebar) 
-        This is typically handled by the parent grid in page.tsx. 
-        Here we define the internal structure. 
-      */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-4">
-        {relatedVideos.map((video) => (
-          <VideoCard 
-            key={video.id} 
-            video={{
-                ...video,
-                thumbnailUrl: video.thumbnailUrl || null,
-                duration: video.duration || null,
-                // Pass minimal required fields. VideoCard interface implementation expects bunyVideoId, title, etc. which are in 'video'
-            }} 
-          />
+      <div className="flex flex-col gap-6">
+        {chunkedVideos.map((chunk, chunkIndex) => (
+           <div key={chunkIndex} className="contents">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {chunk.map((video) => (
+                     <VideoCard 
+                        key={video.id} 
+                        video={{
+                           ...video,
+                           thumbnailUrl: video.thumbnailUrl || null,
+                           duration: video.duration || null,
+                        }} 
+                     />
+                  ))}
+                  
+                  {/* Premium/Ad Injection Logic */}
+                  {/* If this is a full chunk of 8 (or we want to force it even on partials?), inject ads */}
+                  {/* User requirement: "after each 8 video there should be video ads or 2 premium videos" */}
+                  {/* We can just render the extra items right here in the grid if we want them to flow, 
+                      BUT if we want them to break the row or specific spots, we need to be careful.
+                      If "6 video in row", 8 videos is 1 row + 2 videos. 
+                      Adding 2 premium videos makes 10 videos -> 1 row + 4 videos.
+                      This implies flow layout.
+                  */}
+              </div>
+              
+              {/* Injecting content BETWEEN chunks (Conceptually "after 8 videos") */}
+              {/* If we want them IN the flow, we should have added them to the array. 
+                  If we want them as a separate block (like "Sponsored"), we do it here.
+                  "there should be video ads or 2 premium videos".
+                  Let's insert a small banner or premium teaser block after every chunk of 8.
+              */}
+              <div className="col-span-full py-4 text-center bg-gray-100 dark:bg-dark-800 rounded-lg my-2">
+                  <p className="text-gray-500 font-medium text-sm">Sponsored Content / Premium Suggestions</p>
+                  {/* Placeholder for 2 premium videos or ads */}
+                  <div className="flex justify-center gap-4 mt-2">
+                      <div className="w-[300px] h-[169px] bg-black/10 dark:bg-white/5 rounded flex items-center justify-center">
+                          <span className="text-xs">Premium Recommendation 1</span>
+                      </div>
+                      <div className="w-[300px] h-[169px] bg-black/10 dark:bg-white/5 rounded flex items-center justify-center">
+                          <span className="text-xs">Premium Recommendation 2</span>
+                      </div>
+                  </div>
+              </div>
+           </div>
         ))}
       </div>
     </div>

@@ -13,7 +13,12 @@ const AD_POSITIONS = {
    NATIVE: 19      // 20th position (index 19)
 };
 
-export default async function HomePage() {
+import { SortSelector } from '@/components/search/sort-selector';
+
+export default async function HomePage(props: { searchParams: Promise<{ sort?: string }> }) {
+  const searchParams = await props.searchParams;
+  const sort = searchParams.sort || 'recent';
+
   // Fetch published videos with creator info
   const videos = await prisma.video.findMany({
     where: {
@@ -28,9 +33,9 @@ export default async function HomePage() {
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: sort === 'popular' 
+      ? { viewsCount: 'desc' }
+      : { createdAt: 'desc' },
     take: 40,
   });
 
@@ -45,7 +50,8 @@ export default async function HomePage() {
              ...video,
              thumbnailUrl: video.thumbnailUrl || null,
              duration: video.duration || null,
-             orientation: (video.orientation as any) || null
+             orientation: (video.orientation as any) || null,
+             isPremium: video.isPremium
           }} 
         />
       );
@@ -84,10 +90,25 @@ export default async function HomePage() {
         </div>
 
         {/* Header */}
-        <div className="mb-6 hidden md:block">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            Recommended Videos
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden md:block">
+            {sort === 'popular' ? 'Trending Now' : 'Recommended Videos'}
           </h1>
+          
+          <div className="flex items-center gap-2">
+            <Link
+               href="/"
+               className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${sort !== 'popular' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700'}`}
+            >
+               Newest
+            </Link>
+            <Link
+               href="/?sort=popular"
+               className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${sort === 'popular' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-dark-800 dark:text-gray-300 dark:hover:bg-dark-700'}`}
+            >
+               Popular
+            </Link>
+          </div>
         </div>
 
         {videos.length === 0 ? (

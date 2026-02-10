@@ -12,6 +12,32 @@ async function checkAdmin() {
   }
 }
 
+export async function getAdminStats() {
+  await checkAdmin();
+  
+  const [userCount, videoCount, viewCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.video.count(),
+    prisma.videoView.count(), // Or sum of video.viewsCount if that's how we track it?
+  ]);
+  
+  // Actually we store viewsCount on Video, but we also have VideoView model.
+  // Aggregating VideoView might be slow.
+  // Let's use aggregation on Video.viewsCount for total views.
+  
+  const totalViews = await prisma.video.aggregate({
+    _sum: {
+      viewsCount: true,
+    },
+  });
+
+  return {
+    users: userCount,
+    videos: videoCount,
+    views: totalViews._sum.viewsCount || 0,
+  };
+}
+
 // Categories
 export async function createCategory(name: string, slug?: string) {
   await checkAdmin();

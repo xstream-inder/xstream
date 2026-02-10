@@ -228,3 +228,148 @@ export async function warmupLikesCache(videoIds: string[]): Promise<void> {
     console.error('Warmup likes cache error:', error);
   }
 }
+
+interface SubscriptionResponse {
+  success: boolean;
+  isSubscribed: boolean;
+  subscriberCount: number;
+  error?: string;
+}
+
+/**
+ * Toggle subscription to a creator
+ */
+export async function toggleSubscription(creatorId: string): Promise<SubscriptionResponse> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        isSubscribed: false,
+        subscriberCount: 0,
+        error: 'Authentication required',
+      };
+    }
+
+    const userId = session.user.id;
+    if (userId === creatorId) {
+      return {
+        success: false,
+        isSubscribed: false,
+        subscriberCount: 0,
+        error: 'Cannot subscribe to yourself',
+      };
+    }
+
+    // Verify creator exists
+    const creator = await prisma.user.findUnique({
+      where: { id: creatorId },
+      include: {
+        _count: {
+          select: { subscribers: true } // Subscriptions where this user is the CREATOR
+        }
+      }
+    });
+
+    if (!creator) {
+      return {
+        success: false,
+        isSubscribed: false,
+        subscriberCount: 0,
+        error: 'Creator not found',
+      };
+    }
+
+    // Check if subscription exists
+    const existingSubscription = await prisma.subscription.findUnique({
+      where: {
+        subscriberId_creatorId: {
+          subscriberId: userId,
+          creatorId,
+        },
+      },
+    });
+
+    let isSubscribed = false;
+    let subscriberCount = creator._count.subscribers;
+
+    if (existingSubscription) {
+      // Unsubscribe
+      await prisma.subscription.delete({
+        where: { id: existingSubscription.id },
+      });
+      isSubscribed = false;
+      subscriberCount--;
+    } else {
+      // Subscribe
+      await prisma.subscription.create({
+        data: {
+          subscriberId: userId,
+          creatorId,
+        },
+      });
+      isSubscribed = true;
+      subscriberCount++;
+    }
+
+    revalidatePath(`/profile/${creator.username}`);
+    revalidatePath(`/video/[id]`); // Ideally should target specific video pages
+
+    return {
+      success: true,
+      isSubscribed,
+      subscriberCount: Math.max(0, subscriberCount),
+    };
+  } catch (error) {
+    console.error('Toggle subscription error:', error);
+    return {
+      success: false,
+      isSubscribed: false,
+      subscriberCount: 0,
+      error: 'Failed to toggle subscription',
+    };
+  }
+}
+
+/**
+ * Get subscription status for a creator
+ */
+export async function getSubscriptionStatus(creatorId: string): Promise<{
+  isSubscribed: boolean;
+  subscriberCount: number;
+}> {
+  try {
+    const session = await auth();
+    
+    // Get count
+    const count = await prisma.subscription.count({
+      where: { creatorId }
+    });
+
+    let isSubscribed = false;
+    if (session?.user?.id) {
+      const subscription = await prisma.subscription.findUnique({
+        where: {
+          subscriberId_creatorId: {
+            subscriberId: session.user.id,
+            creatorId,
+          },
+        },
+      });
+      isSubscribed = !!subscription;
+    }
+
+    return {
+      isSubscribed,
+      subscriberCount: count,
+    };
+  } catch (error) {
+    console.error('Get subscription status error:', error);
+    return {
+      isSubscribed: false,
+      subscriberCount: 0,
+    };
+  }
+}
+

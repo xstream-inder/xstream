@@ -5,13 +5,13 @@ import { redirect } from 'next/navigation';
 export default async function AdminUploadPage() {
   const session = await auth();
   
-  // Protect Route (Assuming role 'ADMIN' exists in schema or logic)
   if (!session?.user) {
-    redirect('/api/auth/signin');
+    redirect('/auth/signin');
   }
   
-  // Note: Add role check here if your User model has roles
-  // if (session.user.role !== 'ADMIN') redirect('/');
+  if (session.user.role !== 'ADMIN') {
+    redirect('/');
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-12">

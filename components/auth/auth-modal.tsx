@@ -179,7 +179,13 @@ export function AuthModal() {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-                    <Link href="#" className="text-xs text-xred-600 hover:underline">Forgot?</Link>
+                    <Link 
+                      href="/auth/reset" 
+                      onClick={closeModal}
+                      className="text-xs text-xred-600 hover:underline"
+                    >
+                      Forgot?
+                    </Link>
                   </div>
                   <input
                     type="password"

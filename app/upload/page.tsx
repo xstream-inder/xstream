@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { VideoUploader } from '@/components/upload/video-uploader';
+import { auth } from '@/lib/auth-helper';
 
 export default async function UploadPage() {
+  const session = await auth();
+  const isAdmin = session?.user?.role === 'ADMIN';
+
   // Fetch models, categories, and top tags for selection
   const [models, categories, tags] = await Promise.all([
     prisma.model.findMany({
@@ -37,6 +41,7 @@ export default async function UploadPage() {
             models={models} 
             categories={categories} 
             availableTags={tags}
+            isAdmin={isAdmin}
           />
 
           <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">

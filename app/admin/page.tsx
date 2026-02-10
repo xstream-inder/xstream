@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { auth } from '@/lib/auth-helper';
 import { redirect } from 'next/navigation';
+import { getAdminStats } from '@/server/actions/admin';
 
 export default async function AdminDashboard() {
   const session = await auth();
@@ -8,6 +9,8 @@ export default async function AdminDashboard() {
   if (!session?.user || session.user.role !== 'ADMIN') {
     redirect('/');
   }
+
+  const stats = await getAdminStats();
 
   const cards = [
     {
@@ -41,6 +44,21 @@ export default async function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Admin Dashboard</h1>
         
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">{stats.users}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Total Users</div>
+            </div>
+            <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">{stats.videos}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Total Videos</div>
+            </div>
+            <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">{stats.views}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Total Views</div>
+            </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cards.map((card) => (
             <Link 

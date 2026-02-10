@@ -4,7 +4,7 @@ import React from 'react';
 
 interface AdBannerProps {
   slotId: string;
-  format: 'leaderboard' | 'rectangle' | 'native';
+  format: 'leaderboard' | 'rectangle' | 'native' | 'skyscraper' | 'mobile-banner';
   className?: string;
 }
 
@@ -17,6 +17,8 @@ export function AdBanner({ slotId, format, className = '' }: AdBannerProps) {
     switch (format) {
       case 'leaderboard': return 'w-[728px] h-[90px]';
       case 'rectangle': return 'w-[300px] h-[250px]';
+      case 'skyscraper': return 'w-[160px] h-[600px]';
+      case 'mobile-banner': return 'w-[320px] h-[50px]';
       case 'native': return 'w-full aspect-video'; 
       default: return 'w-full h-full';
     }
@@ -26,6 +28,8 @@ export function AdBanner({ slotId, format, className = '' }: AdBannerProps) {
     switch (format) {
        case 'leaderboard': return 'Ad Space (728x90)';
        case 'rectangle': return 'Ad Space (300x250)';
+       case 'skyscraper': return 'Ad Space (160x600)';
+       case 'mobile-banner': return 'Ad Space (320x50)';
        case 'native': return 'Sponsored Content';
     }
   };

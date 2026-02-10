@@ -15,6 +15,7 @@ interface VideoMetadata {
   title: string;
   description: string;
   orientation: string;
+  isPremium: boolean;
   selectedModels: string[];
   newModelNames: string[];
   selectedCategories: string[];
@@ -40,9 +41,10 @@ interface VideoUploaderProps {
   models: Model[];
   categories: Category[];
   availableTags?: Tag[];
+  isAdmin?: boolean;
 }
 
-export function VideoUploader({ models, categories, availableTags = [] }: VideoUploaderProps) {
+export function VideoUploader({ models, categories, availableTags = [], isAdmin = false }: VideoUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [modelInput, setModelInput] = useState('');
@@ -57,6 +59,7 @@ export function VideoUploader({ models, categories, availableTags = [] }: VideoU
     title: '',
     description: '',
     orientation: 'STRAIGHT',
+    isPremium: false,
     selectedModels: [],
     newModelNames: [],
     selectedCategories: [],
@@ -192,6 +195,7 @@ export function VideoUploader({ models, categories, availableTags = [] }: VideoU
               title: metadata.title,
               description: metadata.description || undefined,
               orientation: metadata.orientation as any,
+              isPremium: metadata.isPremium,
               modelIds: metadata.selectedModels,
               newModelNames: metadata.newModelNames, // Pass new models
               categoryIds: metadata.selectedCategories,
@@ -206,6 +210,7 @@ export function VideoUploader({ models, categories, availableTags = [] }: VideoU
                 title: '',
                 description: '',
                 orientation: 'STRAIGHT',
+                isPremium: false,
                 selectedModels: [],
                 newModelNames: [],
                 selectedCategories: [],
@@ -295,6 +300,24 @@ export function VideoUploader({ models, categories, availableTags = [] }: VideoU
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             />
+          </div>
+          
+          <div className="flex items-center">
+             {isAdmin && (
+               <div className="flex items-center">
+                  <input
+                      id="isPremium"
+                      type="checkbox"
+                      checked={metadata.isPremium}
+                      onChange={(e) => setMetadata(prev => ({ ...prev, isPremium: e.target.checked }))}
+                      disabled={uploading}
+                      className="h-4 w-4 text-xred-600 focus:ring-xred-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isPremium" className="ml-2 block text-sm text-gray-900 dark:text-white font-medium">
+                      Premium Content (Subscribers Only)
+                  </label>
+               </div>
+             )}
           </div>
 
           {/* Tags */}

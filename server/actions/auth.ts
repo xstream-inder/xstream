@@ -4,6 +4,9 @@ import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { signUpSchema } from '@/lib/validations/auth';
 
+import { generateVerificationToken } from '@/lib/tokens';
+import { sendVerificationEmail } from '@/lib/mail';
+
 export async function registerUser(formData: FormData) {
   try {
     const data = {
@@ -39,7 +42,7 @@ export async function registerUser(formData: FormData) {
     const hashedPassword = await hash(validatedData.password, 12);
 
     // Create user
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: validatedData.email,
         username: validatedData.username,
@@ -48,9 +51,13 @@ export async function registerUser(formData: FormData) {
       },
     });
 
+    // Send verification email
+    const verificationToken = await generateVerificationToken(validatedData.email);
+    await sendVerificationEmail(verificationToken.email, verificationToken.token);
+
     return {
       success: true,
-      message: 'Account created successfully! Please sign in.',
+      message: 'Confirmation email sent! Please check your inbox.',
     };
   } catch (error: any) {
     console.error('Registration error:', error);

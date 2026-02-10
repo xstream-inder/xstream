@@ -8,6 +8,7 @@ interface VideoUpdateData {
   title?: string;
   description?: string;
   orientation?: 'STRAIGHT' | 'GAY' | 'LESBIAN' | 'TRANS';
+  isPremium?: boolean;
   modelIds?: string[];
   newModelNames?: string[]; // Add support for new models
   categoryIds?: string[];
@@ -221,16 +222,127 @@ export async function updateVideoStatus(videoId: string, status: string) {
   return { success: true };
 }
 
+
 export async function deleteVideo(videoId: string) {
   const session = await auth();
-  if (session?.user?.role !== 'ADMIN') {
+  if (!session?.user?.id) {
      throw new Error('Unauthorized');
   }
+
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { userId: true },
+  });
+
+  if (!video) {
+    throw new Error('Video not found');
+  }
+
+  if (video.userId !== session.user.id && session.user.role !== 'ADMIN') {
+    throw new Error('Forbidden');
+  }
+
+  // TODO: Ideally we should also delete from Bunny Stream here via API
 
   await prisma.video.delete({
     where: { id: videoId },
   });
   
-  revalidatePath('/admin/videos');
+  if (session.user.role === 'ADMIN') {
+    revalidatePath('/admin/videos');
+  } else {
+    revalidatePath('/studio');
+  }
+  
+  return { success: true };
+}
+
+export async function getUserVideos(page = 1, limit = 20) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [videos, total] = await Promise.all([
+    prisma.video.findMany({
+      where: { userId: session.user.id },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      select: {
+          id: true,
+          title: true,
+          thumbnailUrl: true,
+          viewsCount: true,
+          createdAt: true,
+          status: true,
+          description: true,
+      }
+    }),
+    prisma.video.count({ where: { userId: session.user.id } }),
+  ]);
+
+  return { videos, total, pages: Math.ceil(total / limit) };
+}
+
+export async function updateVideo(videoId: string, data: VideoUpdateData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { userId: true },
+  });
+
+  if (!video) {
+    throw new Error('Video not found');
+  }
+
+  if (video.userId !== session.user.id && session.user.role !== 'ADMIN') {
+    throw new Error('Forbidden');
+  }
+
+  await prisma.video.update({
+    where: { id: videoId },
+    data: {
+      title: data.title,
+      description: data.description,
+      orientation: data.orientation,
+      isPremium: data.isPremium,
+    },
+  });
+
+   // Handle Tags if provided
+   if (data.tags && data.tags.length > 0) {
+      // First disconnect all existing tags? Or handle delta? 
+      // For simplicity in MVP: wipe and recreate logic is common but expensive.
+      // Better: find existing, determine add/remove. 
+      // Simplified approach for now:
+      
+      // 1. Clear existing
+      await prisma.videoTag.deleteMany({ where: { videoId } });
+      
+      // 2. Add new
+      for (const tagName of data.tags) {
+        if (!tagName.trim()) continue;
+        const slug = generateSlug(tagName);
+        if (!slug) continue;
+        const tag = await prisma.tag.upsert({
+          where: { slug },
+          update: {},
+          create: { name: tagName.trim(), slug },
+        });
+        await prisma.videoTag.create({
+          data: { videoId, tagId: tag.id },
+        });
+      }
+   }
+
+  revalidatePath('/studio');
+  revalidatePath(`/video/${videoId}`);
   return { success: true };
 }
