@@ -31,21 +31,30 @@ export function LikeButton({
     setLikeCount(newCount);
 
     startTransition(async () => {
-      const result = await toggleLike(videoId);
+      try {
+        const result = await toggleLike(videoId);
 
-      if (result.success) {
-        setIsLiked(result.isLiked);
-        setLikeCount(result.likeCount);
-      } else {
-        // Revert on error
+        if (result.success) {
+          setIsLiked(result.isLiked);
+          setLikeCount(result.likeCount);
+        } else {
+          // Revert on error
+          setIsLiked(initialLiked);
+          setLikeCount(initialCount);
+          
+          if (result.error === 'Authentication required') {
+            openModal('signin');
+          } else {
+            console.error('Like failed:', result.error);
+            // Optional: Show toast instead of alert for better UX
+            // alert(result.error || 'Failed to like video'); 
+          }
+        }
+      } catch (err) {
+        // Revert on network/unexpected error
         setIsLiked(initialLiked);
         setLikeCount(initialCount);
-        
-        if (result.error === 'Authentication required') {
-          openModal('signin');
-        } else {
-          alert(result.error || 'Failed to like video');
-        }
+        console.error('Like action error:', err);
       }
     });
   };

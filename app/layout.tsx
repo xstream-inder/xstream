@@ -14,6 +14,8 @@ import { Suspense } from 'react';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
 
+import { auth } from '@/lib/auth-helper';
+
 export const metadata: Metadata = {
   title: 'eddythedaddy - Adult Video Platform',
   description: 'Premium adult entertainment platform',
@@ -22,11 +24,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -34,7 +38,7 @@ export default function RootLayout({
         <link rel="rating" href="https://www.rtalabel.org/index.php?content=icalp" />
       </head>
       <body className="antialiased bg-white dark:bg-dark-900 text-gray-900 dark:text-gray-100">
-        <SessionProvider>
+        <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
