@@ -118,7 +118,7 @@ export function AuthModal() {
           {/* Header */}
           <div className="px-8 pt-8 pb-6 text-center">
             <h2 className="text-3xl font-black tracking-tighter text-gray-900 dark:text-white mb-2">
-              X<span className="text-xred-600">Stream</span>
+              eddythe<span className="text-xred-600">daddy</span>
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {view === 'signin' 

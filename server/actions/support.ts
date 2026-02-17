@@ -3,8 +3,9 @@
 import { z } from 'zod';
 import { Resend } from 'resend';
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
+// Initialize Resend - only if API key is present
+const apiKey = process.env.RESEND_API_KEY;
+const resend = apiKey ? new Resend(apiKey) : null;
 
 // Validation Schema
 const contactSchema = z.object({
@@ -48,8 +49,8 @@ export async function submitContact(prevState: State, formData: FormData): Promi
     // 2. Send Email (Replace with your support email)
     const SUPPORT_EMAIL = 'support@eddythedaddy.com'; // Or your verified sender
     
-    // In dev mode, we might not have a KEY or verified domain
-    if (process.env.NODE_ENV === 'production') {
+    // In dev mode or if resend is not configured, skip sending
+    if (resend && process.env.NODE_ENV === 'production') {
         await resend.emails.send({
         from: 'contact@eddythedaddy.com', // Must be a verified domain in Resend
         to: SUPPORT_EMAIL,

@@ -5,8 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/providers/sidebar-provider';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { AdUnit } from '@/components/ads/ad-unit';
-import { adConfig } from '@/lib/ads';
 
 interface Category {
   id: string;

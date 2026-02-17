@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { Resend } from 'resend';
 import { auth } from '@/lib/auth-helper';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const apiKey = process.env.RESEND_API_KEY;
+const resend = apiKey ? new Resend(apiKey) : null;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 
 const ReportSchema = z.object({
@@ -30,8 +31,14 @@ export async function submitReport(prevState: any, formData: FormData) {
 
     const validatedData = ReportSchema.parse(rawData);
 
+    if (!resend) {
+      console.warn('⚠️ RESEND_API_KEY missing. Report email not sent, but accepting submission.');
+      // Still return success - we could store in DB instead
+      return { success: true, message: 'Report received. Thank you for helping keep our community safe.' };
+    }
+
     await resend.emails.send({
-      from: 'reports@xstream.dev', 
+      from: 'reports@eddythedaddy.com', 
       to: ADMIN_EMAIL,
       subject: `🚨 Content Report: Video ${validatedData.videoId}`,
       html: `

@@ -139,7 +139,7 @@ export default function DMCAPage() {
                       name="contentUrl"
                       id="contentUrl"
                       required
-                      placeholder="https://xstream.dev/video/..."
+                      placeholder="https://eddythedaddy.com/video/..."
                       className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                      {state.errors?.contentUrl && <p className="mt-1 text-sm text-red-600">{state.errors.contentUrl}</p>}

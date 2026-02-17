@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { ClearHistoryButton } from './clear-history-button';
 
 export const metadata = {
-  title: 'Watch History - XStream',
+  title: 'Watch History - eddythedaddy',
 };
 
 export default async function HistoryPage() {

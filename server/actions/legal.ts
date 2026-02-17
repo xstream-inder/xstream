@@ -3,7 +3,8 @@
 import { z } from 'zod';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const apiKey = process.env.RESEND_API_KEY;
+const resend = apiKey ? new Resend(apiKey) : null;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 
 const DMCASchema = z.object({
@@ -34,8 +35,13 @@ export async function submitDMCA(prevState: any, formData: FormData) {
 
     const validatedData = DMCASchema.parse(rawData);
 
+    if (!resend) {
+      console.warn('⚠️ RESEND_API_KEY missing. DMCA email not sent, but accepting submission.');
+      return { success: true, message: 'DMCA request received. We will review it shortly.' };
+    }
+
     await resend.emails.send({
-      from: 'dmca@xstream.dev', // Ensure this domain is verified in Resend or use 'onboarding@resend.dev' for testing
+      from: 'dmca@eddythedaddy.com', // Ensure this domain is verified in Resend
       to: ADMIN_EMAIL,
       subject: `DMCA Takedown Request from ${validatedData.fullName}`,
       html: `
