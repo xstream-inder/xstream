@@ -52,7 +52,7 @@ export default function RootLayout({
                 <div className="flex flex-col min-h-screen">
                   <div className="flex flex-1">
                     <CategoriesSidebar />
-                    <main className="flex-1 w-full relative">{children}</main>
+                    <main className="flex-1 w-full relative lg:pl-64">{children}</main>
                   </div>
                   <div className="lg:pl-64">
                     {/* Fixed Footer Ad (728x90) or Mobile (300x50/300x100) */}

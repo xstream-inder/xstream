@@ -101,17 +101,6 @@ export function Sidebar({ categories }: SidebarProps) {
         </div>
       </div>
       
-      {/* Sidebar Ad (300x250) */}
-      {/* <div className="px-4 py-6 border-t border-gray-100 dark:border-dark-800 flex justify-center">
-         <AdUnit 
-            zoneId={adConfig.exoclick.sidebarZoneId} 
-            width={300} 
-            height={250} 
-            className="rounded shadow-sm"
-            fallbackText="300x250 Sidebar"
-         />
-      </div> */}
-
       {/* Theme Toggle - Fixed at bottom */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
         <button
@@ -141,7 +130,7 @@ export function Sidebar({ categories }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 h-[calc(100vh-4rem)] sticky top-16 shrink-0">
+      <aside className="hidden lg:block w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 shrink-0 z-40">
         <SidebarContent />
       </aside>
 
