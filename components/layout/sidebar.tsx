@@ -102,7 +102,7 @@ export function Sidebar({ categories }: SidebarProps) {
       </div>
       
       {/* Sidebar Ad (300x250) */}
-      <div className="px-4 py-6 border-t border-gray-100 dark:border-dark-800 flex justify-center">
+      {/* <div className="px-4 py-6 border-t border-gray-100 dark:border-dark-800 flex justify-center">
          <AdUnit 
             zoneId={adConfig.exoclick.sidebarZoneId} 
             width={300} 
@@ -110,7 +110,7 @@ export function Sidebar({ categories }: SidebarProps) {
             className="rounded shadow-sm"
             fallbackText="300x250 Sidebar"
          />
-      </div>
+      </div> */}
 
       {/* Theme Toggle - Fixed at bottom */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
