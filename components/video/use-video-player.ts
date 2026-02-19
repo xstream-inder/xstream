@@ -84,14 +84,64 @@ export function useVideoPlayer({ hlsUrl }: UseVideoPlayerOptions) {
   };
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    // Detect current fullscreen state across vendor prefixes
+    const fullscreenEl =
+      document.fullscreenElement ??
+      (document as any).webkitFullscreenElement ??
+      null;
+
+    if (!fullscreenEl) {
+      // Enter fullscreen
+      if (container.requestFullscreen) {
+        container.requestFullscreen().catch(() => {});
+      } else if ((container as any).webkitRequestFullscreen) {
+        // Older Chrome / Safari on macOS
+        (container as any).webkitRequestFullscreen();
+      } else if (video && (video as any).webkitEnterFullscreen) {
+        // iOS Safari — only <video> supports fullscreen
+        (video as any).webkitEnterFullscreen();
+      }
     } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+      // Exit fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      }
     }
   };
+
+  // Sync isFullscreen state with actual fullscreen changes (Esc key, swipe-down on iOS, etc.)
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const isFs = !!(
+        document.fullscreenElement ??
+        (document as any).webkitFullscreenElement
+      );
+      setIsFullscreen(isFs);
+    };
+
+    // iOS <video> fires webkitbeginfullscreen / webkitendfullscreen
+    const video = videoRef.current;
+    const onIOSBegin = () => setIsFullscreen(true);
+    const onIOSEnd = () => setIsFullscreen(false);
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    video?.addEventListener('webkitbeginfullscreen', onIOSBegin);
+    video?.addEventListener('webkitendfullscreen', onIOSEnd);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      video?.removeEventListener('webkitbeginfullscreen', onIOSBegin);
+      video?.removeEventListener('webkitendfullscreen', onIOSEnd);
+    };
+  }, []);
 
   // Keyboard Shortcuts
   useEffect(() => {

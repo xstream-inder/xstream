@@ -50,18 +50,18 @@ export default async function StudioPage() {
               <table className="w-full text-left">
                 <thead className="bg-gray-50 dark:bg-dark-900/50 text-xs uppercase text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-dark-700">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Video</th>
-                    <th className="px-6 py-4 font-medium">Visibility</th>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                    <th className="px-6 py-4 font-medium text-right">Views</th>
-                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-medium">Video</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-medium">Visibility</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-medium hidden sm:table-cell">Date</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-medium text-right hidden sm:table-cell">Views</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-dark-700">
                   {videos.map((video) => (
                     <tr key={video.id} className="hover:bg-gray-50 dark:hover:bg-dark-700/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-start gap-4">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
                           <div className="w-24 h-14 bg-gray-200 dark:bg-dark-700 rounded relative overflow-hidden flex-shrink-0">
                              {video.thumbnailUrl && (
                                 <img
@@ -84,7 +84,7 @@ export default async function StudioPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4">
                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                             ${video.status === 'PUBLISHED' 
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
@@ -94,13 +94,13 @@ export default async function StudioPage() {
                             {video.status}
                          </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap hidden sm:table-cell">
                          {new Date(video.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm text-gray-500 dark:text-gray-400 text-right hidden sm:table-cell">
                          {video.viewsCount}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                            <Link
                               href={`/studio/edit/${video.id}`}

@@ -69,7 +69,7 @@ export function VideoControls({
       {/* Progress Bar */}
       <div
         ref={progressBarRef}
-        className="w-full h-1.5 bg-gray-600 cursor-pointer rounded-full mb-4 relative hover:h-2.5 transition-all group/progress"
+        className="w-full h-2 sm:h-1.5 bg-gray-600 cursor-pointer rounded-full mb-4 relative sm:hover:h-2.5 transition-all group/progress py-2 -my-2 sm:py-0 sm:my-0 bg-clip-content"
         onClick={handleSeek}
         role="slider"
         tabIndex={0}
@@ -96,11 +96,11 @@ export function VideoControls({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Play/Pause */}
           <button
             onClick={togglePlay}
-            className="text-white hover:text-xred-500 transition-colors"
+            className="text-white hover:text-xred-500 transition-colors p-2"
             title={isPlaying ? 'Pause (k)' : 'Play (k)'}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
@@ -155,10 +155,10 @@ export function VideoControls({
           </button>
 
           {/* Volume */}
-          <div className="flex items-center gap-2 group/volume">
+          <div className="hidden sm:flex items-center gap-2 group/volume">
             <button
               onClick={toggleVolume}
-              className="text-white hover:text-gray-300"
+              className="text-white hover:text-gray-300 p-2"
               title={isMuted ? 'Unmute (m)' : 'Mute (m)'}
               aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
@@ -201,12 +201,12 @@ export function VideoControls({
           </div>
 
           {/* Time */}
-          <div className="text-white text-sm">
+          <div className="text-white text-xs sm:text-sm">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Speed Selector */}
           <div className="relative menu-container">
             <button
@@ -303,7 +303,7 @@ export function VideoControls({
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            className="text-white hover:text-xred-500 transition-colors"
+            className="text-white hover:text-xred-500 transition-colors p-2"
             title="Fullscreen (f)"
             aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           >

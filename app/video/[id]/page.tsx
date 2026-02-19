@@ -285,9 +285,9 @@ export default async function VideoPage({ params }: VideoPageProps) {
                       url={`https://www.eddythedaddy.com/video/${video.id}`} 
                       title={video.title} 
                    />
-                   <a href="#comments" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-dark-800 hover:bg-gray-200 dark:hover:bg-dark-700 text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap">
+                   <a href="#comments" className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-gray-100 dark:bg-dark-800 hover:bg-gray-200 dark:hover:bg-dark-700 text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap min-h-[44px]">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                      <span className="font-medium">Comment</span>
+                      <span className="font-medium hidden sm:inline">Comment</span>
                    </a>
                    <ReportButton videoId={video.id} />
                 </div>

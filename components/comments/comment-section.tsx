@@ -119,7 +119,7 @@ export default function CommentSection({
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
         Comments ({optimisticComments.length})
       </h2>
 

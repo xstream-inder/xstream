@@ -235,7 +235,7 @@ export default function CommentItem({
   const replyCount = comment.replyCount || 0;
 
   return (
-    <div className={`${depth > 0 ? "ml-8 mt-4" : ""}`}>
+    <div className={`${depth > 0 ? "ml-4 sm:ml-8 mt-4" : ""}`}>
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="flex-shrink-0">

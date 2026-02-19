@@ -33,20 +33,20 @@ export default async function ProfilePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white dark:bg-dark-800 rounded-lg shadow p-6 mb-6 border border-gray-200 dark:border-dark-700">
-        <div className="flex items-start gap-6">
-          <div className="h-24 w-24 rounded-full bg-xred-600 flex items-center justify-center text-white text-3xl font-bold">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <div className="h-24 w-24 rounded-full bg-xred-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
             {user.username[0].toUpperCase()}
           </div>
           
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {user.username}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {user.email}
             </p>
             
-            <div className="flex gap-6 mt-4">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6 mt-4">
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {user._count.videos}
@@ -67,7 +67,7 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-4">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-4">
               <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                 {user.role}
               </span>

@@ -48,7 +48,7 @@ export default async function SettingsPage() {
         {/* Subscription Card */}
         <div className="bg-white dark:bg-dark-800 shadow rounded-lg p-6 border border-gray-200 dark:border-dark-700">
            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Subscription Plan</h2>
-           <div className="flex items-center justify-between">
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                  {user.isPremium ? (
                     <div>
@@ -68,7 +68,7 @@ export default async function SettingsPage() {
                  )}
               </div>
               
-              <div className="ml-4">
+              <div className="sm:ml-4">
                  {user.isPremium ? (
                     <form action={createCustomerPortal}>
                        <button 

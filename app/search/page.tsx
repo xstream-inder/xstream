@@ -181,9 +181,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             
             <div className="mt-12 text-center">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Or browse by:</h3>
-                <div className="flex justify-center gap-4">
-                     <Link href="/new" className="px-6 py-3 bg-xred-600 text-white rounded-lg hover:bg-xred-700 font-medium">Newest Videos</Link>
-                     <Link href="/best" className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">Top Rated</Link>
+                <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                     <Link href="/new" className="px-6 py-3 bg-xred-600 text-white rounded-lg hover:bg-xred-700 font-medium text-center">Newest Videos</Link>
+                     <Link href="/best" className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-center">Top Rated</Link>
                 </div>
             </div>
           </div>
