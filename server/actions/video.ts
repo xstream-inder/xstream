@@ -138,37 +138,37 @@ export async function finalizeUpload(
       });
     }
 
-    // Process Tags
+    // Process Tags - batched to avoid N+1 sequential queries
     if (metadata?.tags && metadata.tags.length > 0) {
-      for (const tagName of metadata.tags) {
-        if (!tagName.trim()) continue;
-        
-        const slug = generateSlug(tagName);
-        if (!slug) continue;
+      const validTags = metadata.tags
+        .map((t) => ({ name: t.trim(), slug: generateSlug(t) }))
+        .filter((t) => t.name && t.slug);
 
-        // Upsert tag
-        const tag = await prisma.tag.upsert({
-          where: { slug },
-          update: {},
-          create: {
-            name: tagName.trim(),
-            slug,
-          },
+      if (validTags.length > 0) {
+        // Batch upsert all tags in a single transaction
+        await prisma.$transaction(
+          validTags.map((t) =>
+            prisma.tag.upsert({
+              where: { slug: t.slug },
+              update: {},
+              create: { name: t.name, slug: t.slug },
+            })
+          )
+        );
+
+        // Fetch all tag IDs in one query
+        const tags = await prisma.tag.findMany({
+          where: { slug: { in: validTags.map((t) => t.slug) } },
+          select: { id: true },
         });
 
-        // Link tag to video
-        await prisma.videoTag.upsert({
-          where: {
-             videoId_tagId: {
-               videoId: updatedVideo.id,
-               tagId: tag.id
-             }
-          },
-          update: {},
-          create: {
+        // Batch create all video-tag links
+        await prisma.videoTag.createMany({
+          data: tags.map((tag) => ({
             videoId: updatedVideo.id,
             tagId: tag.id,
-          },
+          })),
+          skipDuplicates: true,
         });
       }
     }

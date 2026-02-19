@@ -5,9 +5,19 @@ import { auth } from '@/lib/auth-helper';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { uploadToBunnyStorage, deleteFromBunnyStorage } from '@/lib/bunny/storage';
+
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2 MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
 
 const profileSchema = z.object({
-  avatarUrl: z.string().url().or(z.string().startsWith('data:image/')).optional().or(z.literal('')),
+  avatarUrl: z.string().url().optional().or(z.literal('')),
   currentPassword: z.string().optional(),
   newPassword: z
     .string()
@@ -25,8 +35,12 @@ export async function updateProfile(prevState: any, formData: FormData): Promise
     return { success: false, error: 'Unauthorized', message: '' };
   }
 
+  // Handle avatar file upload separately (comes as File from FormData)
+  const avatarFile = formData.get('avatarFile') as File | null;
+  const avatarUrlField = formData.get('avatarUrl') as string;
+
   const rawData = {
-    avatarUrl: formData.get('avatarUrl') as string,
+    avatarUrl: avatarUrlField || '',
     currentPassword: formData.get('currentPassword') as string,
     newPassword: formData.get('newPassword') as string,
   };
@@ -48,12 +62,41 @@ export async function updateProfile(prevState: any, formData: FormData): Promise
   }
 
   const updateData: any = {};
-  
-  // Helper to detect if field changed
   let hasChanges = false;
 
-  // Update Avatar
-  if (data.avatarUrl !== undefined && data.avatarUrl !== user.avatarUrl) {
+  // ----- Avatar handling -----
+  // Priority: file upload > URL field > removal (empty string)
+  if (avatarFile && avatarFile.size > 0) {
+    // Validate file type
+    if (!ALLOWED_IMAGE_TYPES.includes(avatarFile.type as any)) {
+      return { success: false, error: 'Invalid image type. Use JPEG, PNG, WebP, or GIF.', message: '' };
+    }
+    // Validate file size
+    if (avatarFile.size > MAX_AVATAR_SIZE) {
+      return { success: false, error: 'Image must be smaller than 2 MB.', message: '' };
+    }
+
+    try {
+      const buffer = Buffer.from(await avatarFile.arrayBuffer());
+      const ext = MIME_TO_EXT[avatarFile.type] || '.jpg';
+      const cdnUrl = await uploadToBunnyStorage(buffer, 'avatars', ext);
+
+      // Delete old avatar from CDN if it was a Bunny URL
+      if (user.avatarUrl && user.avatarUrl.includes('storage.bunnycdn.com') || user.avatarUrl?.includes(process.env.BUNNY_STORAGE_PULL_ZONE || '___')) {
+        await deleteFromBunnyStorage(user.avatarUrl);
+      }
+
+      updateData.avatarUrl = cdnUrl;
+      hasChanges = true;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Avatar upload failed';
+      return { success: false, error: msg, message: '' };
+    }
+  } else if (data.avatarUrl !== undefined && data.avatarUrl !== user.avatarUrl) {
+    // User provided a URL (or empty to remove)
+    if (!data.avatarUrl && user.avatarUrl?.includes(process.env.BUNNY_STORAGE_PULL_ZONE || '___')) {
+      await deleteFromBunnyStorage(user.avatarUrl);
+    }
     updateData.avatarUrl = data.avatarUrl || null;
     hasChanges = true;
   }

@@ -18,6 +18,7 @@ import { auth } from '@/lib/auth-helper';
 import { SubscribeButton } from '@/components/video/subscribe-button';
 import { ReportButton } from '@/components/video/report-button';
 import { ShareButton } from '@/components/video/share-button';
+import { cache } from 'react';
 
 interface VideoPageProps {
   params: Promise<{
@@ -25,31 +26,9 @@ interface VideoPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: VideoPageProps) {
-  const { id } = await params;
-  const video = await prisma.video.findUnique({
-    where: { id },
-    select: { title: true, description: true },
-  });
-
-  if (!video) {
-    return {
-      title: 'Video Not Found',
-    };
-  }
-
-  return {
-    title: video.title,
-    description: video.description || 'Watch this video on eddythedaddy',
-  };
-}
-
-export default async function VideoPage({ params }: VideoPageProps) {
-  const { id } = await params;
-  const session = await auth();
-
-  // Fetch video with creator info, including TAGS
-  const video = await prisma.video.findUnique({
+// React cache() deduplicates this between generateMetadata and page render
+const getVideo = cache(async (id: string) => {
+  return prisma.video.findUnique({
     where: { id },
     include: {
       user: {
@@ -72,15 +51,40 @@ export default async function VideoPage({ params }: VideoPageProps) {
       },
       videoTags: {
         include: {
-          tag: true
-        }
-      }
+          tag: true,
+        },
+      },
     },
   });
+});
+
+export async function generateMetadata({ params }: VideoPageProps) {
+  const { id } = await params;
+  const video = await getVideo(id);
+
+  if (!video) {
+    return {
+      title: 'Video Not Found',
+    };
+  }
+
+  return {
+    title: video.title,
+    description: video.description || 'Watch this video on eddythedaddy',
+  };
+}
+
+export default async function VideoPage({ params }: VideoPageProps) {
+  const { id } = await params;
+
+  // Deduplicated: same cache() call as generateMetadata — no extra DB hit
+  const video = await getVideo(id);
 
   if (!video) {
     notFound();
   }
+
+  const session = await auth();
 
   // Check if video is published or belongs to current user
   if (video.status !== 'PUBLISHED' && video.userId !== session?.user?.id) {
@@ -135,20 +139,16 @@ export default async function VideoPage({ params }: VideoPageProps) {
      );
   }
 
-  // Fetch like status and view count from Redis
-  const { isLiked, likeCount } = await getLikeStatus(video.id);
-  const viewCount = await getViewCount(video.id);
-  
-  // Fetch Subscription status
-  const { isSubscribed, subscriberCount } = await getSubscriptionStatus(video.userId);
+  // Parallelize Redis/engagement queries instead of sequential waterfall
+  const [likeData, viewCount, subscriptionData, commentsResult] = await Promise.all([
+    getLikeStatus(video.id),
+    getViewCount(video.id),
+    getSubscriptionStatus(video.userId),
+    getComments({ videoId: video.id, parentId: null, limit: 10 }),
+  ]);
 
-  // Fetch initial comments
-  const commentsResult = await getComments({
-    videoId: video.id,
-    parentId: null,
-    limit: 10,
-  });
-
+  const { isLiked, likeCount } = likeData;
+  const { isSubscribed, subscriberCount } = subscriptionData;
   const initialComments = commentsResult.success ? commentsResult.comments || [] : [];
   const initialNextCursor = commentsResult.success ? commentsResult.nextCursor || null : null;
 

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/components/providers/sidebar-provider';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 
 interface Category {
@@ -31,7 +31,7 @@ function SidebarContent({ categories, pathname, theme, setTheme, mounted }: {
           Categories
         </h2>
 
-        <nav className="space-y-1">
+        <nav className="space-y-1" aria-label="Category navigation">
           {categories.map((category) => (
             <Link
               key={category.id}
@@ -129,9 +129,18 @@ export function Sidebar({ categories }: SidebarProps) {
     setMounted(true);
   }, []);
 
+  const handleEscapeKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && isOpen) close();
+  }, [isOpen, close]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [handleEscapeKey]);
+
   return (
     <>
-      <aside className="hidden lg:block w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 shrink-0 z-40">
+      <aside className="hidden lg:block w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 shrink-0 z-40" aria-label="Categories sidebar">
         <SidebarContent categories={categories} pathname={pathname} theme={theme} setTheme={setTheme} mounted={mounted} />
       </aside>
 
@@ -142,11 +151,12 @@ export function Sidebar({ categories }: SidebarProps) {
             onClick={close}
           />
           
-          <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-900 shadow-xl transform transition-transform duration-300 ease-in-out">
+          <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-900 shadow-xl transform transition-transform duration-300 ease-in-out" role="dialog" aria-modal="true" aria-label="Navigation menu">
              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-800">
                 <span className="text-lg font-bold text-xred-600">Menu</span>
                 <button 
                   onClick={close}
+                  aria-label="Close menu"
                   className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

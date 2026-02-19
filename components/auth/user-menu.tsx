@@ -19,9 +19,16 @@ export function UserMenu() {
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -60,6 +67,9 @@ export function UserMenu() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 focus:outline-none"
+        aria-label="User menu"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
         <div className="h-8 w-8 rounded-full bg-xred-600 flex items-center justify-center text-white font-medium">
           {session.user.username?.[0]?.toUpperCase() || 'U'}
@@ -70,7 +80,7 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-800 ring-1 ring-black ring-opacity-5 z-50">
+        <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-800 ring-1 ring-black ring-opacity-5 z-50" role="menu">
           <div className="py-1">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
               <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -88,6 +98,7 @@ export function UserMenu() {
               href="/profile"
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
+              role="menuitem"
             >
               Your Profile
             </Link>
@@ -97,6 +108,7 @@ export function UserMenu() {
                 href="/upload"
                 className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
                 onClick={() => setIsOpen(false)}
+                role="menuitem"
               >
                 Upload Video
               </Link>
@@ -106,6 +118,7 @@ export function UserMenu() {
               href="/studio"
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
+              role="menuitem"
             >
               Creator Studio
             </Link>
@@ -114,6 +127,7 @@ export function UserMenu() {
               href="/settings"
               className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
+              role="menuitem"
             >
               Settings
             </Link>
@@ -121,6 +135,7 @@ export function UserMenu() {
             <div className="border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleSignOut}
+                role="menuitem"
                 className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-700"
               >
                 Sign out

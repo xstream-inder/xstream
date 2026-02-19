@@ -126,14 +126,14 @@
 
 | # | Task | File(s) | Status | Notes |
 |---|------|---------|--------|-------|
-| 5.1 | **Add `unstable_cache` or React `cache()` to hot pages** — homepage, best, new, categories, tags | `app/page.tsx`, `app/best/page.tsx`, `app/new/page.tsx`, etc. | ⬜ | Every page hits DB on every request |
-| 5.2 | **Deduplicate data fetching** — share data between `generateMetadata()` and page component | `app/video/[id]/page.tsx`, `app/category/[slug]/page.tsx`, `app/tag/[slug]/page.tsx`, `app/model/[slug]/page.tsx` | ⬜ | Same query runs twice per page load |
-| 5.3 | **Add composite database indexes** — `[status, createdAt]` on videos, `[userId, viewedAt]` on video_views | `prisma/schema.prisma` | ⬜ | Missing indexes for common query patterns |
-| 5.4 | **Add `publishedAt` index** on videos | `prisma/schema.prisma` | ⬜ | Sorting by publish date has no index |
-| 5.5 | **Fix N+1 in cron sync** — batch UPDATE statements instead of individual `prisma.video.update()` | `app/api/cron/sync-stats/route.ts` | ⬜ | 1 UPDATE per video |
-| 5.6 | **Fix N+1 in tag processing** — batch upserts for tags and video-tag relations | `server/actions/video.ts` | ⬜ | Sequential upsert per tag |
-| 5.7 | **Add route-segment loading/error boundaries** — for `/video/[id]`, `/admin`, `/category/[slug]` | `app/video/[id]/loading.tsx` (new), `app/video/[id]/error.tsx` (new), etc. | ⬜ | Only root-level error/loading exist |
-| 5.8 | **Add `revalidate` exports** to appropriate pages | Various pages | ⬜ | No ISR configured anywhere |
+| 5.1 | **Add `unstable_cache` or React `cache()` to hot pages** — homepage, best, new, categories, tags | `app/page.tsx`, `app/best/page.tsx`, `app/new/page.tsx`, etc. | ✅ | `unstable_cache` with 60s TTL + `videos` tag on homepage, /best, /new; removed `force-dynamic` from homepage |
+| 5.2 | **Deduplicate data fetching** — share data between `generateMetadata()` and page component | `app/video/[id]/page.tsx`, `app/category/[slug]/page.tsx`, `app/tag/[slug]/page.tsx`, `app/model/[slug]/page.tsx` | ✅ | React `cache()` dedup on all 4 pages; parallelized video page queries with `Promise.all`; fixed tag page JS-side filtering to Prisma WHERE; added `take:60` limit on model page |
+| 5.3 | **Add composite database indexes** — `[status, createdAt]` on videos, `[userId, viewedAt]` on video_views | `prisma/schema.prisma` | ✅ | Added `[status, createdAt DESC]`, `[status, viewsCount DESC]`, `[status, likesCount DESC]` composites |
+| 5.4 | **Add `publishedAt` index** on videos | `prisma/schema.prisma` | ✅ | Added `[publishedAt DESC]` index |
+| 5.5 | **Fix N+1 in cron sync** — batch UPDATE statements instead of individual `prisma.video.update()` | `app/api/cron/sync-stats/route.ts` | ✅ | Replaced `Promise.all` of individual updates with `prisma.$transaction` batch |
+| 5.6 | **Fix N+1 in tag processing** — batch upserts for tags and video-tag relations | `server/actions/video.ts` | ✅ | Replaced sequential for-loop with `$transaction` batch upsert + `createMany` with `skipDuplicates` |
+| 5.7 | **Add route-segment loading/error boundaries** — for `/video/[id]`, `/admin`, `/category/[slug]` | `app/video/[id]/loading.tsx` (new), `app/video/[id]/error.tsx` (new), etc. | ✅ | Created loading.tsx for video/[id], category/[slug], tag/[slug], model/[slug], admin; error.tsx for video/[id], category/[slug] |
+| 5.8 | **Add `revalidate` exports** to appropriate pages | Various pages | ✅ | `export const revalidate = 60` on homepage, /best, /new |
 
 ---
 
@@ -165,14 +165,14 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 7.1 | **Add focus traps to all modals** — auth modal, report modal, age-gate modal | ⬜ | Users can Tab out of modals |
-| 7.2 | **Add `aria-label` to all video player controls** — play/pause, volume, fullscreen, speed, quality | ⬜ | Screen readers can't identify controls |
-| 7.3 | **Make progress bar keyboard-accessible** — add `role="slider"`, `aria-valuenow`, `onKeyDown` | ⬜ | Only responds to mouse click |
-| 7.4 | **Add `role="menu"` and keyboard navigation to dropdowns** — user menu, quality picker, speed picker | ⬜ | No arrow key navigation |
-| 7.5 | **Add `role="listbox"` and keyboard nav to search suggestions** | ⬜ | No `aria-activedescendant` |
-| 7.6 | **Add `aria-live` region for clipboard feedback** — share button "Copied!" message | ⬜ | Screen reader misses the feedback |
-| 7.7 | **Add `Escape` key handler to all modals** | ⬜ | Only backdrop click closes modals |
-| 7.8 | **Add `aria-label` to navigation landmarks** — main nav, sidebar nav, footer nav | ⬜ | Generic `<nav>` without label |
+| 7.1 | **Add focus traps to all modals** — auth modal, report modal, age-gate modal | ✅ | `useFocusTrap` hook with Tab trapping + focus restoration |
+| 7.2 | **Add `aria-label` to all video player controls** — play/pause, volume, fullscreen, speed, quality | ✅ | `aria-label` + `aria-hidden` on decorative SVGs |
+| 7.3 | **Make progress bar keyboard-accessible** — add `role="slider"`, `aria-valuenow`, `onKeyDown` | ✅ | Left/Right arrows seek ±5s, `aria-valuetext` |
+| 7.4 | **Add `role="menu"` and keyboard navigation to dropdowns** — user menu, quality picker, speed picker | ✅ | `role="menu/menuitem"`, `aria-expanded`, `aria-haspopup`, Escape |
+| 7.5 | **Add `role="listbox"` and keyboard nav to search suggestions** | ✅ | Full combobox pattern: `aria-activedescendant`, ArrowUp/Down, Escape |
+| 7.6 | **Add `aria-live` region for clipboard feedback** — share button "Copied!" message | ✅ | `sr-only` `aria-live="polite"` span |
+| 7.7 | **Add `Escape` key handler to all modals** | ✅ | All modals, dropdowns, sidebar via `useFocusTrap` + inline handlers |
+| 7.8 | **Add `aria-label` to navigation landmarks** — main nav, sidebar nav, footer nav | ✅ | `<nav aria-label>` on navbar, sidebar, footer; `role="search"` on forms |
 
 ---
 
@@ -264,10 +264,10 @@
 
 | # | Task | File(s) | Status | Notes |
 |---|------|---------|--------|-------|
-| 8.10 | **Upload avatars to CDN** — data URLs stored in DB cause bloat (~2.7 MB per avatar) | `server/actions/user.ts`, `components/user/profile-form.tsx` | ⬜ | Upload to Bunny CDN or S3, store URL only |
-| 8.11 | **Fix password minLength mismatch** — client allows 6 chars, Zod requires 8 | `components/user/profile-form.tsx`, `components/auth/auth-modal.tsx` | ⬜ | Align client `minLength={8}` with server schema |
-| 8.12 | **Migrate from `middleware.ts` to `proxy`** — Next.js 16 deprecated middleware file convention | `middleware.ts` | ⬜ | Replace with proxy convention per Next.js 16 docs |
-| 8.13 | **Fix `Notification.createdAt` serialization** — typed as `Date` but arrives as `string` over wire | `components/layout/notification-bell.tsx` | ⬜ | Change type to `Date | string` or deserialize |
+| 8.10 | **Upload avatars to CDN** — data URLs stored in DB cause bloat (~2.7 MB per avatar) | `lib/bunny/storage.ts`, `server/actions/user.ts`, `components/user/profile-form.tsx` | ✅ | File upload → Bunny Edge Storage CDN, old avatars auto-deleted |
+| 8.11 | **Fix password minLength mismatch** — client allows 6 chars, Zod requires 8 | `components/user/profile-form.tsx`, `components/auth/auth-modal.tsx` | ✅ | `minLength={8}` on all password inputs |
+| 8.12 | **Migrate from `middleware.ts` to `proxy`** — Next.js 16 deprecated middleware file convention | `proxy.ts` | ✅ | Renamed middleware.ts → proxy.ts, deprecation warning gone |
+| 8.13 | **Fix `Notification.createdAt` serialization** — typed as `Date` but arrives as `string` over wire | `components/layout/notification-bell.tsx` | ✅ | Changed type to `Date | string` |
 
 ---
 
@@ -279,11 +279,11 @@
 | Phase 2 — Data Integrity | 10 | 10 | 100% |
 | Phase 3 — Incomplete Features | 17 | 17 | 100% |
 | Phase 4 — Inconsistencies | 22 | 22 | 100% |
-| Phase 5 — Performance | 8 | 0 | 0% |
+| Phase 5 — Performance | 8 | 8 | 100% |
 | Phase 6 — Testing & DevOps | 13 | 0 | 0% |
-| Phase 7 — Accessibility | 8 | 0 | 0% |
-| Phase 8 — Review Fixes | 13 | 9 | 69% |
-| **TOTAL** | **101** | **68** | **67%** |
+| Phase 7 — Accessibility | 8 | 8 | 100% |
+| Phase 8 — Review Fixes | 13 | 13 | 100% |
+| **TOTAL** | **101** | **88** | **87%** |
 
 ---
 

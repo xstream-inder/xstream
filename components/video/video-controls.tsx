@@ -71,13 +71,24 @@ export function VideoControls({
         ref={progressBarRef}
         className="w-full h-1.5 bg-gray-600 cursor-pointer rounded-full mb-4 relative hover:h-2.5 transition-all group/progress"
         onClick={handleSeek}
+        role="slider"
+        tabIndex={0}
+        aria-label="Video progress"
+        aria-valuenow={Math.round(currentTime)}
+        aria-valuemin={0}
+        aria-valuemax={Math.round(duration)}
+        aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') { e.preventDefault(); skip(-5); }
+          else if (e.key === 'ArrowRight') { e.preventDefault(); skip(5); }
+        }}
       >
         <div
           className="absolute top-0 left-0 h-full bg-white/30 rounded-full"
           style={{ width: `${buffered}%` }}
         />
         <div
-          className="absolute top-0 left-0 h-full bg-xred-600 rounded-full relative"
+          className="absolute top-0 left-0 h-full bg-xred-600 rounded-full"
           style={{ width: `${(currentTime / duration) * 100}%` }}
         >
           <div className="absolute right-0 -top-1 w-3 h-3 bg-xred-600 rounded-full opacity-0 group-hover/progress:opacity-100 shadow transform scale-150" />
@@ -91,13 +102,14 @@ export function VideoControls({
             onClick={togglePlay}
             className="text-white hover:text-xred-500 transition-colors"
             title={isPlaying ? 'Pause (k)' : 'Play (k)'}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
               </svg>
             ) : (
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -108,8 +120,9 @@ export function VideoControls({
             onClick={() => skip(-10)}
             className="text-white hover:text-gray-300 hidden sm:block"
             title="Rewind 10s (Left Arrow)"
+            aria-label="Rewind 10 seconds"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -126,8 +139,9 @@ export function VideoControls({
             onClick={() => skip(10)}
             className="text-white hover:text-gray-300 hidden sm:block"
             title="Forward 10s (Right Arrow)"
+            aria-label="Forward 10 seconds"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -146,9 +160,10 @@ export function VideoControls({
               onClick={toggleVolume}
               className="text-white hover:text-gray-300"
               title={isMuted ? 'Unmute (m)' : 'Mute (m)'}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted || volume === 0 ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -163,7 +178,7 @@ export function VideoControls({
                   />
                 </svg>
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -180,6 +195,7 @@ export function VideoControls({
               step="0.1"
               value={volume}
               onChange={handleVolumeChange}
+              aria-label="Volume"
               className="w-0 overflow-hidden group-hover/volume:w-20 transition-all h-1 bg-gray-400 rounded-lg appearance-none cursor-pointer accent-xred-600"
             />
           </div>
@@ -200,15 +216,19 @@ export function VideoControls({
               }}
               className="text-white hover:text-xred-500 text-sm font-semibold w-8 text-center"
               title="Playback Speed"
+              aria-label={`Playback speed ${playbackSpeed}x`}
+              aria-haspopup="true"
+              aria-expanded={showSpeedMenu}
             >
               {playbackSpeed}x
             </button>
             {showSpeedMenu && (
-              <div className="absolute bottom-full right-0 mb-2 bg-black/90 border border-gray-700 rounded-lg overflow-hidden min-w-[80px] shadow-xl z-30">
+              <div className="absolute bottom-full right-0 mb-2 bg-black/90 border border-gray-700 rounded-lg overflow-hidden min-w-[80px] shadow-xl z-30" role="menu">
                 {PLAYBACK_SPEEDS.map((speed) => (
                   <button
                     key={speed}
                     onClick={() => handleSpeedChange(speed)}
+                    role="menuitem"
                     className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-800 ${
                       playbackSpeed === speed ? 'text-xred-500 font-bold' : 'text-gray-300'
                     }`}
@@ -230,6 +250,9 @@ export function VideoControls({
                 }}
                 className="flex items-center gap-1 text-white hover:text-xred-500 text-sm font-semibold border border-white/20 px-2 py-0.5 rounded"
                 title="Quality"
+                aria-label={`Quality: ${currentQuality === -1 ? 'Auto' : qualities.find((q) => q.levelIndex === currentQuality)?.label}`}
+                aria-haspopup="true"
+                aria-expanded={showQualityMenu}
               >
                 {currentQuality === -1
                   ? 'Auto'
@@ -239,6 +262,7 @@ export function VideoControls({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -256,11 +280,12 @@ export function VideoControls({
               </button>
 
               {showQualityMenu && (
-                <div className="absolute bottom-full right-0 mb-2 bg-black/90 border border-gray-700 rounded-lg overflow-hidden min-w-[120px] shadow-xl z-30">
+                <div className="absolute bottom-full right-0 mb-2 bg-black/90 border border-gray-700 rounded-lg overflow-hidden min-w-[120px] shadow-xl z-30" role="menu">
                   {qualities.map((q) => (
                     <button
                       key={q.levelIndex}
                       onClick={() => handleQualityChange(q.levelIndex)}
+                      role="menuitem"
                       className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-800 ${
                         currentQuality === q.levelIndex
                           ? 'text-xred-500 font-bold'
@@ -280,13 +305,14 @@ export function VideoControls({
             onClick={toggleFullscreen}
             className="text-white hover:text-xred-500 transition-colors"
             title="Fullscreen (f)"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           >
             {isFullscreen ? (
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5z" />
               </svg>
             ) : (
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
               </svg>
             )}

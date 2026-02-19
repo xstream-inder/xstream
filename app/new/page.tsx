@@ -3,6 +3,9 @@ import { VideoCard } from '@/components/video/video-card';
 import Link from 'next/link';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
+import { unstable_cache } from 'next/cache';
+
+export const revalidate = 60;
 
 export const metadata = {
   title: 'New Videos - eddythedaddy',
@@ -11,31 +14,30 @@ export const metadata = {
 
 const VIDEOS_PER_PAGE = 36;
 
+const getCachedNewVideos = unstable_cache(
+  async (page: number) => {
+    const [totalCount, videos] = await Promise.all([
+      prisma.video.count({ where: { status: 'PUBLISHED' } }),
+      prisma.video.findMany({
+        where: { status: 'PUBLISHED' },
+        orderBy: { createdAt: 'desc' },
+        take: VIDEOS_PER_PAGE,
+        skip: (page - 1) * VIDEOS_PER_PAGE,
+        include: { user: { select: { username: true, avatarUrl: true } } },
+      }),
+    ]);
+    return { totalCount, videos };
+  },
+  ['new-videos'],
+  { revalidate: 60, tags: ['videos'] }
+);
+
 export default async function NewVideosPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
 
-  const totalCount = await prisma.video.count({ where: { status: 'PUBLISHED' } });
+  const { totalCount, videos } = await getCachedNewVideos(page);
   const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
-
-  const videos = await prisma.video.findMany({
-    where: {
-      status: 'PUBLISHED',
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: VIDEOS_PER_PAGE,
-    skip: (page - 1) * VIDEOS_PER_PAGE,
-    include: {
-      user: {
-        select: {
-          username: true,
-          avatarUrl: true,
-        },
-      },
-    },
-  });
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-900">

@@ -118,17 +118,19 @@ async function syncLikes(): Promise<number> {
         })
         .filter((item) => item.count !== null && item.videoId);
 
-      // Batch update database
-      await Promise.all(
-        updates.map(({ videoId, count }) =>
-          prisma.video.update({
-            where: { id: videoId },
-            data: { likesCount: count! },
-          }).catch((err) => {
-            console.error(`Failed to update likes for video ${videoId}:`, err);
-          })
-        )
-      );
+      // Batch update database using a single transaction
+      if (updates.length > 0) {
+        await prisma.$transaction(
+          updates.map(({ videoId, count }) =>
+            prisma.video.update({
+              where: { id: videoId },
+              data: { likesCount: count! },
+            })
+          )
+        ).catch((err) => {
+          console.error(`Failed to batch update likes:`, err);
+        });
+      }
 
       synced += updates.length;
 
@@ -182,17 +184,19 @@ async function syncViews(): Promise<number> {
         })
         .filter((item) => item.count !== null && item.videoId);
 
-      // Batch update database
-      await Promise.all(
-        updates.map(({ videoId, count }) =>
-          prisma.video.update({
-            where: { id: videoId },
-            data: { viewsCount: count! },
-          }).catch((err) => {
-            console.error(`Failed to update views for video ${videoId}:`, err);
-          })
-        )
-      );
+      // Batch update database using a single transaction
+      if (updates.length > 0) {
+        await prisma.$transaction(
+          updates.map(({ videoId, count }) =>
+            prisma.video.update({
+              where: { id: videoId },
+              data: { viewsCount: count! },
+            })
+          )
+        ).catch((err) => {
+          console.error(`Failed to batch update views:`, err);
+        });
+      }
 
       synced += updates.length;
 

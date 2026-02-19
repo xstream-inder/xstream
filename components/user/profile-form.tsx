@@ -37,6 +37,7 @@ export function ProfileForm({ user }: { user: UserProps }) {
   const isCredentialsUser = !user.authProvider || user.authProvider === 'credentials';
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatarUrl);
   const [avatarUrlValue, setAvatarUrlValue] = useState<string>(user.avatarUrl || '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,17 +54,24 @@ export function ProfileForm({ user }: { user: UserProps }) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setAvatarPreview(dataUrl);
-      setAvatarUrlValue(dataUrl);
-    };
-    reader.readAsDataURL(file);
+    setAvatarFile(file);
+    setAvatarUrlValue(''); // clear URL field when file is selected
+    // Show local preview
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+  };
+
+  // Custom form action that appends the file to FormData
+  const handleFormAction = (formData: FormData) => {
+    if (avatarFile) {
+      formData.set('avatarFile', avatarFile);
+      formData.set('avatarUrl', ''); // server will use file instead
+    }
+    return formAction(formData);
   };
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={handleFormAction} className="space-y-6">
         {/* Read Only Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -120,7 +128,7 @@ export function ProfileForm({ user }: { user: UserProps }) {
                     {avatarPreview && (
                       <button
                         type="button"
-                        onClick={() => { setAvatarPreview(null); setAvatarUrlValue(''); }}
+                        onClick={() => { setAvatarPreview(null); setAvatarUrlValue(''); setAvatarFile(null); }}
                         className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700"
                       >
                         Remove
@@ -141,14 +149,15 @@ export function ProfileForm({ user }: { user: UserProps }) {
                 <input type="hidden" name="avatarUrl" value={avatarUrlValue} />
                 
                 <p className="text-xs text-gray-500">
-                  JPG, PNG, WebP or GIF. Max 2MB. Or paste a URL below:
+                  JPG, PNG, WebP or GIF. Max 2MB. Uploaded to CDN. Or paste a URL below:
                 </p>
                 <input
                     type="url"
-                    value={avatarUrlValue.startsWith('data:') ? '' : avatarUrlValue}
-                    onChange={(e) => { setAvatarUrlValue(e.target.value); setAvatarPreview(e.target.value || null); }}
+                    value={avatarFile ? '' : avatarUrlValue}
+                    onChange={(e) => { setAvatarUrlValue(e.target.value); setAvatarPreview(e.target.value || null); setAvatarFile(null); }}
                     placeholder="https://example.com/avatar.jpg"
-                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-xred-500 sm:text-sm px-3 py-2"
+                    disabled={!!avatarFile}
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-xred-500 sm:text-sm px-3 py-2 disabled:opacity-50"
                 />
             </div>
         </div>
@@ -166,6 +175,7 @@ export function ProfileForm({ user }: { user: UserProps }) {
                             type="password"
                             name="currentPassword"
                             id="currentPassword"
+                            minLength={8}
                             className="mt-1 block w-full rounded-lg border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-xred-500 sm:text-sm px-3 py-2"
                         />
                     </div>
@@ -177,6 +187,7 @@ export function ProfileForm({ user }: { user: UserProps }) {
                             type="password"
                             name="newPassword"
                             id="newPassword"
+                            minLength={8}
                             className="mt-1 block w-full rounded-lg border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-900 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-xred-500 sm:text-sm px-3 py-2"
                         />
                     </div>

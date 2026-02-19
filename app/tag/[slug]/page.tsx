@@ -3,6 +3,7 @@ import { VideoCard } from '@/components/video/video-card';
 import { notFound } from 'next/navigation';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
+import { cache } from 'react';
 
 interface TagPageProps {
   params: Promise<{
@@ -10,11 +11,14 @@ interface TagPageProps {
   }>;
 }
 
+// React cache() deduplicates between generateMetadata and page render
+const getTag = cache(async (slug: string) => {
+  return prisma.tag.findUnique({ where: { slug } });
+});
+
 export async function generateMetadata({ params }: TagPageProps) {
   const { slug } = await params;
-  const tag = await prisma.tag.findUnique({
-    where: { slug },
-  });
+  const tag = await getTag(slug);
 
   if (!tag) {
     return {
@@ -31,39 +35,33 @@ export async function generateMetadata({ params }: TagPageProps) {
 export default async function TagPage({ params }: TagPageProps) {
   const { slug } = await params;
 
-  // Fetch Tag and its videos
-  const tag = await prisma.tag.findUnique({
-    where: { slug },
-    include: {
-      videos: {
-        include: {
-          video: {
-            include: {
-              user: {
-                 select: {
-                    username: true,
-                    avatarUrl: true
-                 }
-              }
-            }
-          }
+  // Deduplicated: getTag uses same cache() as generateMetadata
+  // Videos query filters status in Prisma WHERE (not JS-side)
+  const [tag, tagVideos] = await Promise.all([
+    getTag(slug),
+    prisma.videoTag.findMany({
+      where: {
+        tag: { slug },
+        video: { status: 'PUBLISHED' },
+      },
+      include: {
+        video: {
+          include: {
+            user: { select: { username: true, avatarUrl: true } },
+          },
         },
-        orderBy: {
-            video: {
-                viewsCount: 'desc'
-            }
-        },
-        take: 32 // Limit to 32 videos for now
-      }
-    }
-  });
+      },
+      orderBy: { video: { viewsCount: 'desc' } },
+      take: 32,
+    }),
+  ]);
 
   if (!tag) {
     notFound();
   }
 
-  // Extract videos from the relation
-  const videos = tag.videos.map(vt => vt.video).filter(v => v.status === 'PUBLISHED');
+  // Extract videos — already filtered by status in DB query
+  const videos = tagVideos.map(vt => vt.video);
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-900">

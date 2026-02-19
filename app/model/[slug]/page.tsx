@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { VideoCard } from '@/components/video/video-card';
 import Image from 'next/image';
 import { formatNumber } from '@/lib/utils';
+import { cache } from 'react';
 
 interface ModelPageProps {
   params: Promise<{
@@ -10,12 +11,32 @@ interface ModelPageProps {
   }>;
 }
 
+// React cache() deduplicates between generateMetadata and page render
+const getModel = cache(async (slug: string) => {
+  return prisma.model.findUnique({
+    where: { slug },
+    include: {
+      videoModels: {
+        where: {
+          video: { status: 'PUBLISHED' },
+        },
+        include: {
+          video: {
+            include: {
+              user: { select: { username: true, avatarUrl: true } },
+            },
+          },
+        },
+        orderBy: { video: { createdAt: 'desc' } },
+        take: 60,
+      },
+    },
+  });
+});
+
 export async function generateMetadata({ params }: ModelPageProps) {
   const { slug } = await params;
-  const model = await prisma.model.findUnique({
-    where: { slug },
-    select: { stageName: true, bio: true },
-  });
+  const model = await getModel(slug);
 
   if (!model) {
     return { title: 'Model Not Found' };
@@ -30,35 +51,8 @@ export async function generateMetadata({ params }: ModelPageProps) {
 export default async function ModelPage({ params }: ModelPageProps) {
   const { slug } = await params;
 
-  const model = await prisma.model.findUnique({
-    where: { slug },
-    include: {
-      videoModels: {
-        where: {
-          video: {
-            status: 'PUBLISHED',
-          },
-        },
-        include: {
-          video: {
-            include: {
-              user: {
-                select: {
-                  username: true,
-                  avatarUrl: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          video: {
-            createdAt: 'desc',
-          },
-        },
-      },
-    },
-  });
+  // Deduplicated: same cache() call as generateMetadata — no extra DB hit
+  const model = await getModel(slug);
 
   if (!model) {
     notFound();

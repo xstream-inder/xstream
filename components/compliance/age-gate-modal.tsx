@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 const AGE_GATE_KEY = 'age_verified';
 
@@ -19,6 +20,7 @@ export function AgeGateModal() {
   }, []);
 
   const canEnter = ageChecked && tosChecked;
+  const dialogRef = useFocusTrap(showModal);
 
   const handleEnter = () => {
     if (!canEnter) return;
@@ -33,7 +35,7 @@ export function AgeGateModal() {
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4" role="alertdialog" aria-modal="true" aria-labelledby="age-gate-title" ref={dialogRef}>
       <div className="bg-white dark:bg-dark-800 rounded-lg max-w-md w-full p-8 text-center">
         {/* Warning Icon */}
         <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
@@ -53,7 +55,7 @@ export function AgeGateModal() {
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2" id="age-gate-title">
           Age Verification Required
         </h2>
 

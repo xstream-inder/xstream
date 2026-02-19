@@ -2,6 +2,7 @@
 
 import { useState, useActionState, useEffect } from 'react';
 import { submitReport } from '@/server/actions/reporting';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 interface ReportModalProps {
   videoId: string;
@@ -35,6 +36,7 @@ const initialState: State = {
 export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
   const [state, formAction, isPending] = useActionState(submitReport, initialState);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const dialogRef = useFocusTrap(isOpen, onClose);
 
   useEffect(() => {
     if (state.success && !hasSubmitted) {
@@ -45,7 +47,7 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" ref={dialogRef}>
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={onClose}></div>

@@ -3,6 +3,7 @@ import { VideoCard } from '@/components/video/video-card';
 import Link from 'next/link';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
+import { unstable_cache } from 'next/cache';
 
 interface BestVideosPageProps {
   searchParams: Promise<{
@@ -13,42 +14,39 @@ interface BestVideosPageProps {
 
 const VIDEOS_PER_PAGE = 36;
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Best Videos - eddythedaddy',
   description: 'Watch the most popular videos on eddythedaddy.',
 };
+
+const getCachedBestVideos = unstable_cache(
+  async (sort: string, page: number) => {
+    const orderBy = sort === 'rated' ? { likesCount: 'desc' as const } : { viewsCount: 'desc' as const };
+    const [totalCount, videos] = await Promise.all([
+      prisma.video.count({ where: { status: 'PUBLISHED' } }),
+      prisma.video.findMany({
+        where: { status: 'PUBLISHED' },
+        orderBy,
+        take: VIDEOS_PER_PAGE,
+        skip: (page - 1) * VIDEOS_PER_PAGE,
+        include: { user: { select: { username: true, avatarUrl: true } } },
+      }),
+    ]);
+    return { totalCount, videos };
+  },
+  ['best-videos'],
+  { revalidate: 60, tags: ['videos'] }
+);
 
 export default async function BestVideosPage({ searchParams }: BestVideosPageProps) {
   const params = await searchParams;
   const currentSort = params.sort === 'rated' ? 'rated' : 'views';
   const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
 
-  let orderBy: any = {};
-  if (currentSort === 'rated') {
-    orderBy = { likesCount: 'desc' };
-  } else {
-    orderBy = { viewsCount: 'desc' };
-  }
-
-  const totalCount = await prisma.video.count({ where: { status: 'PUBLISHED' } });
+  const { totalCount, videos } = await getCachedBestVideos(currentSort, page);
   const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
-
-  const videos = await prisma.video.findMany({
-    where: {
-      status: 'PUBLISHED',
-    },
-    orderBy,
-    take: VIDEOS_PER_PAGE,
-    skip: (page - 1) * VIDEOS_PER_PAGE,
-    include: {
-      user: {
-        select: {
-          username: true,
-          avatarUrl: true,
-        },
-      },
-    },
-  });
 
   return (
     <div className="min-h-screen bg-white dark:bg-dark-900">

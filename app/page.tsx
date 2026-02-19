@@ -5,8 +5,9 @@ import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
 import Link from 'next/link';
 import { ReactNode } from 'react';
+import { unstable_cache } from 'next/cache';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 // Configuration for ad injection positions
 const AD_POSITIONS = {
@@ -18,36 +19,33 @@ import { SortSelector } from '@/components/search/sort-selector';
 
 const VIDEOS_PER_PAGE = 40;
 
+const getCachedVideos = unstable_cache(
+  async (sort: string, page: number) => {
+    const [totalCount, videos] = await Promise.all([
+      prisma.video.count({ where: { status: 'PUBLISHED' } }),
+      prisma.video.findMany({
+        where: { status: 'PUBLISHED' },
+        include: {
+          user: { select: { username: true, avatarUrl: true } },
+        },
+        orderBy: sort === 'popular' ? { viewsCount: 'desc' } : { createdAt: 'desc' },
+        take: VIDEOS_PER_PAGE,
+        skip: (page - 1) * VIDEOS_PER_PAGE,
+      }),
+    ]);
+    return { totalCount, videos };
+  },
+  ['homepage-videos'],
+  { revalidate: 60, tags: ['videos'] }
+);
+
 export default async function HomePage(props: { searchParams: Promise<{ sort?: string; page?: string }> }) {
   const searchParams = await props.searchParams;
   const sort = searchParams.sort || 'recent';
   const page = Math.max(1, parseInt(searchParams.page || '1', 10) || 1);
 
-  // Get total count for pagination
-  const totalCount = await prisma.video.count({
-    where: { status: 'PUBLISHED' },
-  });
+  const { totalCount, videos } = await getCachedVideos(sort, page);
   const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
-
-  // Fetch published videos with creator info
-  const videos = await prisma.video.findMany({
-    where: {
-      status: 'PUBLISHED',
-    },
-    include: {
-      user: {
-        select: {
-          username: true,
-          avatarUrl: true, 
-        },
-      },
-    },
-    orderBy: sort === 'popular' 
-      ? { viewsCount: 'desc' }
-      : { createdAt: 'desc' },
-    take: VIDEOS_PER_PAGE,
-    skip: (page - 1) * VIDEOS_PER_PAGE,
-  });
 
   // Helper to inject ads into the grid
   const renderVideoGrid = () => {

@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from  'next/navigation';
 import { registerUser } from '@/server/actions/auth';
 import Link from 'next/link';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 export function AuthModal() {
   const { isOpen, view, openModal, closeModal } = useAuthModal();
@@ -17,6 +18,8 @@ export function AuthModal() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const dialogRef = useFocusTrap(isOpen, closeModal);
 
   // Sign In State
   const [signInData, setSignInData] = useState({
@@ -95,7 +98,7 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] overflow-y-auto">
+    <div className="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" ref={dialogRef}>
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
@@ -109,6 +112,7 @@ export function AuthModal() {
           {/* Close Button */}
           <button 
             onClick={closeModal}
+            aria-label="Close"
             className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-10"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +122,7 @@ export function AuthModal() {
 
           {/* Header */}
           <div className="px-8 pt-8 pb-6 text-center">
-            <h2 className="text-3xl font-black tracking-tighter text-gray-900 dark:text-white mb-2">
+            <h2 className="text-3xl font-black tracking-tighter text-gray-900 dark:text-white mb-2" id="auth-modal-title">
               eddythe<span className="text-xred-600">daddy</span>
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -232,7 +236,7 @@ export function AuthModal() {
                   <input
                     type="password"
                     required
-                    minLength={6}
+                    minLength={8}
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     className="w-full px-4 py-2 bg-gray-50 dark:bg-dark-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-xred-500 focus:border-transparent outline-none transition-colors"
@@ -243,7 +247,7 @@ export function AuthModal() {
                   <input
                     type="password"
                     required
-                    minLength={6}
+                    minLength={8}
                     value={signUpData.confirmPassword}
                     onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                     className="w-full px-4 py-2 bg-gray-50 dark:bg-dark-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-xred-500 focus:border-transparent outline-none transition-colors"

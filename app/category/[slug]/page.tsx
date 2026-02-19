@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
 import { formatNumber } from '@/lib/utils';
+import { cache } from 'react';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -15,12 +16,16 @@ interface CategoryPageProps {
   }>;
 }
 
+// React cache() deduplicates between generateMetadata and page render
+const getCategory = cache(async (slug: string) => {
+  return prisma.category.findUnique({
+    where: { slug },
+  });
+});
+
 export async function generateMetadata({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = await prisma.category.findUnique({
-    where: { slug },
-    select: { name: true, description: true },
-  });
+  const category = await getCategory(slug);
 
   if (!category) {
     return { title: 'Category Not Found' };
@@ -47,38 +52,31 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     orderBy = { video: { likesCount: 'desc' } };
   }
 
-  const category = await prisma.category.findUnique({
-    where: { slug },
-    include: {
-      videos: {
-        where: {
-          video: {
-            status: 'PUBLISHED',
-          },
-        },
-        include: {
-          video: {
-            include: {
-              user: {
-                select: {
-                  username: true,
-                  avatarUrl: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy,
-        take: 40,
+  // Deduplicated: getCategory uses same cache() as generateMetadata
+  const [category, categoryVideos] = await Promise.all([
+    getCategory(slug),
+    prisma.videoCategory.findMany({
+      where: {
+        category: { slug },
+        video: { status: 'PUBLISHED' },
       },
-    },
-  });
+      include: {
+        video: {
+          include: {
+            user: { select: { username: true, avatarUrl: true } },
+          },
+        },
+      },
+      orderBy,
+      take: 40,
+    }),
+  ]);
 
   if (!category) {
     notFound();
   }
 
-  const videos = category.videos.map((vc) => vc.video);
+  const videos = categoryVideos.map((vc) => vc.video);
 
   const tabs = [
     { id: 'recent', label: 'Newest' },

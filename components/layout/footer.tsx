@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Separator } from '@/components/ui/separator';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -7,7 +6,7 @@ export function Footer() {
   return (
     <footer className="bg-white dark:bg-dark-900 border-t border-gray-200 dark:border-dark-800 py-8 mt-auto z-40 relative">
       <div className="max-w-[1800px] mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <nav aria-label="Footer navigation" className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand & Info */}
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-1 mb-4">
@@ -93,7 +92,7 @@ export function Footer() {
               </li>
             </ul>
           </div>
-        </div>
+        </nav>
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-dark-800 text-center md:text-left flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
           <p>© {currentYear} eddythedaddy. All rights reserved.</p>

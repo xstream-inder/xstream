@@ -128,6 +128,10 @@ model Video {
   @@index([viewsCount(sort: Desc)]) // For "Trending" feed
   @@index([userId]) // For user profile video lists
   @@index([status]) // For filtering published videos
+  @@index([status, createdAt(sort: Desc)]) // Composite: published + newest
+  @@index([status, viewsCount(sort: Desc)]) // Composite: published + most viewed
+  @@index([status, likesCount(sort: Desc)]) // Composite: published + top rated
+  @@index([publishedAt(sort: Desc)]) // For published-date ordering
   @@map("videos")
 }
 
