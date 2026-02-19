@@ -17,24 +17,15 @@ interface SidebarProps {
   categories: Category[];
 }
 
-export function Sidebar({ categories }: SidebarProps) {
-  const { isOpen, close } = useSidebar();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const pathname = usePathname();
-
-  // Close sidebar on route change
-  useEffect(() => {
-    close();
-  }, [pathname]);
-
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const SidebarContent = () => (
-    <div className="h-full flex flex-col bg-white dark:bg-dark-900 border-r border-gray-200 dark:border-gray-800">
+function SidebarContent({ categories, pathname, theme, setTheme, mounted }: {
+  categories: Category[];
+  pathname: string;
+  theme: string | undefined;
+  setTheme: (theme: string) => void;
+  mounted: boolean;
+}) {
+  return (
+    <div className="h-full flex flex-col bg-white dark:bg-dark-900 border-r border-gray-200 dark:border-dark-800">
        <div className="p-4 flex-1 overflow-y-auto">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 px-2">
           Categories
@@ -61,8 +52,7 @@ export function Sidebar({ categories }: SidebarProps) {
           ))}
         </nav>
 
-        {/* Additional Links */}
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-dark-800">
           <Link
             href="/models"
             className="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-lg transition-colors group"
@@ -99,8 +89,7 @@ export function Sidebar({ categories }: SidebarProps) {
         </div>
       </div>
       
-      {/* Theme Toggle - Fixed at bottom */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-t border-gray-200 dark:border-dark-800">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-lg transition-colors group"
@@ -124,26 +113,37 @@ export function Sidebar({ categories }: SidebarProps) {
       </div>
     </div>
   );
+}
+
+export function Sidebar({ categories }: SidebarProps) {
+  const { isOpen, close } = useSidebar();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    close();
+  }, [pathname]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 shrink-0 z-40">
-        <SidebarContent />
+        <SidebarContent categories={categories} pathname={pathname} theme={theme} setTheme={setTheme} mounted={mounted} />
       </aside>
 
-      {/* Mobile Sidebar (Drawer) */}
       {isOpen && (
         <div className="fixed inset-0 z-50 lg:hidden font-sans">
-          {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
             onClick={close}
           />
           
-          {/* Drawer */}
           <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-dark-900 shadow-xl transform transition-transform duration-300 ease-in-out">
-             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-800">
                 <span className="text-lg font-bold text-xred-600">Menu</span>
                 <button 
                   onClick={close}
@@ -155,7 +155,7 @@ export function Sidebar({ categories }: SidebarProps) {
                 </button>
              </div>
              <div className="h-[calc(100%-4rem)] overflow-y-auto">
-                <SidebarContent />
+                <SidebarContent categories={categories} pathname={pathname} theme={theme} setTheme={setTheme} mounted={mounted} />
              </div>
           </div>
         </div>

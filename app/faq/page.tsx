@@ -91,7 +91,7 @@ export default function FAQPage() {
         </p>
         <Link 
           href="/contact" 
-          className="mt-4 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-xred-600 hover:bg-xred-700"
+          className="mt-4 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-xred-600 hover:bg-xred-700"
         >
           Contact Support
         </Link>

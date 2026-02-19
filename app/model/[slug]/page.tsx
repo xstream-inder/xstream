@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { VideoCard } from '@/components/video/video-card';
 import Image from 'next/image';
+import { formatNumber } from '@/lib/utils';
 
 interface ModelPageProps {
   params: Promise<{
@@ -79,20 +80,14 @@ export default async function ModelPage({ params }: ModelPageProps) {
 
   const age = calculateAge(model.birthDate);
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Model Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <div className="bg-white dark:bg-dark-800 rounded-lg shadow p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Avatar */}
-            <div className="relative w-48 h-48 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+            <div className="relative w-48 h-48 rounded-lg overflow-hidden bg-gray-200 dark:bg-dark-700 flex-shrink-0">
               {model.avatarUrl ? (
                 <Image
                   src={model.avatarUrl}
@@ -190,10 +185,12 @@ export default async function ModelPage({ params }: ModelPageProps) {
           </h2>
 
           {videos.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg">
-              <p className="text-gray-500 dark:text-gray-400">
-                No videos available yet
-              </p>
+            <div className="text-center py-16">
+              <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No videos available</h3>
+              <p className="text-gray-600 dark:text-gray-400">This model hasn&apos;t uploaded any videos yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

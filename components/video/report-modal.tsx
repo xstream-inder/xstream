@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useActionState } from 'react';
+import { useState, useActionState, useEffect } from 'react';
 import { submitReport } from '@/server/actions/reporting';
 
 interface ReportModalProps {
@@ -36,11 +36,13 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
   const [state, formAction, isPending] = useActionState(submitReport, initialState);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (state.success && !hasSubmitted) {
+      setHasSubmitted(true);
+    }
+  }, [state.success, hasSubmitted]);
 
-  if (state.success && !hasSubmitted) {
-     setHasSubmitted(true);
-  }
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -73,7 +75,7 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
                       <button
                         type="button"
                         onClick={onClose}
-                        className="mt-4 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:text-sm"
+                        className="mt-4 w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 sm:text-sm"
                       >
                         Close
                       </button>
@@ -89,7 +91,7 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
                             <select
                                 name="reason"
                                 required
-                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg"
                             >
                                 <option value="">Select a reason</option>
                                 {REPORT_REASONS.map((r) => (
@@ -106,13 +108,13 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
                             <textarea
                                 name="description"
                                 rows={3}
-                                className="mt-1 block w-full border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                className="mt-1 block w-full border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
                                 placeholder="Please provide more context..."
                             ></textarea>
                         </div>
                         
                         {state.message && !state.success && (
-                            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
                                 {state.message}
                             </div>
                         )}
@@ -121,14 +123,14 @@ export function ReportModal({ videoId, isOpen, onClose }: ReportModalProps) {
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                                className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                             >
                                 {isPending ? 'Submitting...' : 'Submit Report'}
                             </button>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-dark-600 shadow-sm px-4 py-2 bg-white dark:bg-dark-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 dark:border-dark-600 shadow-sm px-4 py-2 bg-white dark:bg-dark-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 sm:mt-0 sm:w-auto sm:text-sm"
                             >
                                 Cancel
                             </button>

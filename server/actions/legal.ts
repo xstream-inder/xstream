@@ -2,6 +2,8 @@
 
 import { z } from 'zod';
 import { Resend } from 'resend';
+import { formSubmitRateLimiter } from '@/lib/redis';
+import { getClientIpHash, escapeHtml } from '@/lib/utils/security';
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
@@ -22,6 +24,13 @@ const DMCASchema = z.object({
 
 export async function submitDMCA(prevState: any, formData: FormData) {
   try {
+    // Rate limiting
+    const ipHash = await getClientIpHash();
+    const { success: allowed } = await formSubmitRateLimiter.limit(`dmca:${ipHash}`);
+    if (!allowed) {
+      return { success: false, message: 'Too many submissions. Please try again later.' };
+    }
+
     const rawData = {
       fullName: formData.get('fullName'),
       email: formData.get('email'),
@@ -43,19 +52,19 @@ export async function submitDMCA(prevState: any, formData: FormData) {
     await resend.emails.send({
       from: 'dmca@eddythedaddy.com', // Ensure this domain is verified in Resend
       to: ADMIN_EMAIL,
-      subject: `DMCA Takedown Request from ${validatedData.fullName}`,
+      subject: `DMCA Takedown Request from ${escapeHtml(validatedData.fullName)}`,
       html: `
         <h1>DMCA Takedown Request</h1>
-        <p><strong>Name:</strong> ${validatedData.fullName}</p>
-        <p><strong>Email:</strong> ${validatedData.email}</p>
-        <p><strong>Phone:</strong> ${validatedData.phone || 'N/A'}</p>
-        <p><strong>Address:</strong> ${validatedData.address}</p>
+        <p><strong>Name:</strong> ${escapeHtml(validatedData.fullName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(validatedData.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(validatedData.phone || 'N/A')}</p>
+        <p><strong>Address:</strong> ${escapeHtml(validatedData.address)}</p>
         <hr />
-        <p><strong>Content URL:</strong> <a href="${validatedData.contentUrl}">${validatedData.contentUrl}</a></p>
+        <p><strong>Content URL:</strong> <a href="${encodeURI(validatedData.contentUrl)}">${escapeHtml(validatedData.contentUrl)}</a></p>
         <p><strong>Description:</strong></p>
-        <p>${validatedData.description}</p>
+        <p>${escapeHtml(validatedData.description)}</p>
         <hr />
-        <p><strong>Signature:</strong> ${validatedData.signature}</p>
+        <p><strong>Signature:</strong> ${escapeHtml(validatedData.signature)}</p>
         <p><em>User agreed to perjury statement.</em></p>
       `,
     });

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateVideo } from '@/server/actions/video';
+import type { VideoOrientation } from '@prisma/client';
 
 interface VideoToEdit {
   id: string;
@@ -48,9 +49,9 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl bg-white dark:bg-dark-800 p-6 rounded-lg shadow">
       {error && (
-        <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
@@ -65,7 +66,7 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-dark-700 dark:border-gray-600 dark:text-white"
         />
       </div>
 
@@ -78,7 +79,7 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-dark-700 dark:border-gray-600 dark:text-white"
         />
       </div>
 
@@ -89,8 +90,8 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
         <select
           id="orientation"
           value={orientation}
-          onChange={(e) => setOrientation(e.target.value as any)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          onChange={(e) => setOrientation(e.target.value as VideoOrientation)}
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-dark-700 dark:border-gray-600 dark:text-white"
         >
           <option value="STRAIGHT">Straight</option>
           <option value="GAY">Gay</option>
@@ -109,7 +110,7 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
           value={tags}
           onChange={(e) => setTags(e.target.value)}
           placeholder="teen, pov, outdoor"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 dark:bg-dark-700 dark:border-gray-600 dark:text-white"
         />
       </div>
 
@@ -130,14 +131,14 @@ export function EditVideoForm({ video }: { video: VideoToEdit }) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-dark-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-dark-600"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Saving...' : 'Save Changes'}
         </button>

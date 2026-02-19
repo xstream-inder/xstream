@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { auth } from '@/lib/auth-helper';
 import { redirect } from 'next/navigation';
 import { getAdminStats } from '@/server/actions/admin';
+import { getReportCounts } from '@/server/actions/reporting';
 
 export default async function AdminDashboard() {
   const session = await auth();
@@ -10,7 +11,10 @@ export default async function AdminDashboard() {
     redirect('/');
   }
 
-  const stats = await getAdminStats();
+  const [stats, reportCounts] = await Promise.all([
+    getAdminStats(),
+    getReportCounts(),
+  ]);
 
   const cards = [
     {
@@ -36,6 +40,12 @@ export default async function AdminDashboard() {
       description: 'Manage seeding video tags.',
       href: '/admin/tags',
       color: 'bg-orange-500',
+    },
+    {
+      title: 'Reports',
+      description: `${reportCounts.pending} pending content reports to review.`,
+      href: '/admin/reports',
+      color: 'bg-red-500',
     },
   ];
 

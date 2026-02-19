@@ -28,12 +28,14 @@ export default async function HistoryPage() {
         </div>
 
         {history.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🕰️</div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-16">
+            <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No watch history yet
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400">
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
               Videos you watch will appear here.
             </p>
           </div>
@@ -46,9 +48,9 @@ export default async function HistoryPage() {
                   VideoCard expects `id`, `title`, `thumbnailUrl`, `user`, etc. 
                   We mapped it in the server action. 
                 */}
-                <VideoCard video={item.video as any} /> 
+                <VideoCard video={item.video} /> 
                 <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 px-1">
-                   Watched on {new Date(item.viewedAt).toLocaleDateString()}
+                   Watched on {new Date(item.watchedAt).toLocaleDateString()}
                 </div>
               </div>
             ))}

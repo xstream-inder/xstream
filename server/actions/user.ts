@@ -7,12 +7,19 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 const profileSchema = z.object({
-  avatarUrl: z.string().url().optional().or(z.literal('')),
+  avatarUrl: z.string().url().or(z.string().startsWith('data:image/')).optional().or(z.literal('')),
   currentPassword: z.string().optional(),
-  newPassword: z.string().min(6).optional().or(z.literal('')),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .optional()
+    .or(z.literal('')),
 });
 
-export async function updateProfile(prevState: any, formData: FormData) {
+export async function updateProfile(prevState: any, formData: FormData): Promise<{ success: boolean; error: string; message: string }> {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: 'Unauthorized', message: '' };
@@ -70,7 +77,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
         }
     }
 
-    const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+    const hashedPassword = await bcrypt.hash(data.newPassword, 12);
     updateData.password = hashedPassword;
     hasChanges = true;
   }

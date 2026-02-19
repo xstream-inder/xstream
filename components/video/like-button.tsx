@@ -66,7 +66,7 @@ export function LikeButton({
       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
         isLiked
           ? 'bg-red-600 text-white hover:bg-red-700'
-          : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+          : 'bg-gray-200 dark:bg-dark-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-dark-600'
       } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <svg

@@ -4,6 +4,7 @@ import { useState, useTransition, useOptimistic } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAuthModal } from "@/components/providers/auth-modal-provider";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   createComment,
   deleteComment,
@@ -30,10 +31,12 @@ export default function CommentItem({
   const { data: session } = useSession();
   const router = useRouter();
   const { openModal } = useAuthModal();
+  const { confirm } = useConfirm();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [editContent, setEditContent] = useState(comment.content);
+  const [displayContent, setDisplayContent] = useState(comment.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showReplies, setShowReplies] = useState(false);
@@ -137,21 +140,28 @@ export default function CommentItem({
 
     if (result.success) {
       setIsEditing(false);
-      comment.content = editContent.trim();
+      const trimmed = editContent.trim();
+      setEditContent(trimmed);
+      setDisplayContent(trimmed);
     } else {
       setError(result.error || "Failed to update comment");
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this comment?")) return;
+    const confirmed = await confirm({
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment?',
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
 
     const result = await deleteComment(comment.id);
 
     if (!result.success) {
-      alert(result.error || "Failed to delete comment");
+      setError(result.error || "Failed to delete comment");
     }
-    // The page will revalidate automatically
   };
 
   const handleLike = async () => {
@@ -236,7 +246,7 @@ export default function CommentItem({
               className="w-10 h-10 rounded-full"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-dark-600 flex items-center justify-center">
               <span className="text-gray-600 dark:text-gray-300 font-semibold">
                 {comment.user.username[0].toUpperCase()}
               </span>
@@ -261,7 +271,7 @@ export default function CommentItem({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-xred-500"
                 rows={3}
                 maxLength={2000}
                 disabled={isSubmitting}
@@ -271,7 +281,7 @@ export default function CommentItem({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="px-3 py-1 bg-xred-600 text-white text-sm rounded-lg hover:bg-xred-700 disabled:opacity-50"
                 >
                   {isSubmitting ? "Saving..." : "Save"}
                 </button>
@@ -279,10 +289,10 @@ export default function CommentItem({
                   type="button"
                   onClick={() => {
                     setIsEditing(false);
-                    setEditContent(comment.content);
+                    setEditContent(displayContent);
                     setError("");
                   }}
-                  className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+                  className="px-3 py-1 bg-gray-300 dark:bg-dark-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg hover:bg-gray-400 dark:hover:bg-dark-600"
                 >
                   Cancel
                 </button>
@@ -290,7 +300,7 @@ export default function CommentItem({
             </form>
           ) : (
             <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
-              {comment.content}
+              {displayContent}
             </p>
           )}
 
@@ -356,7 +366,7 @@ export default function CommentItem({
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 placeholder={`Reply to ${comment.user.username}...`}
-                className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-xred-500"
                 rows={2}
                 maxLength={2000}
                 disabled={isSubmitting}
@@ -366,7 +376,7 @@ export default function CommentItem({
                 <button
                   type="submit"
                   disabled={isSubmitting || !replyContent.trim()}
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="px-3 py-1 bg-xred-600 text-white text-sm rounded-lg hover:bg-xred-700 disabled:opacity-50"
                 >
                   {isSubmitting ? "Posting..." : "Reply"}
                 </button>
@@ -377,7 +387,7 @@ export default function CommentItem({
                     setReplyContent("");
                     setError("");
                   }}
-                  className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+                  className="px-3 py-1 bg-gray-300 dark:bg-dark-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg hover:bg-gray-400 dark:hover:bg-dark-600"
                 >
                   Cancel
                 </button>

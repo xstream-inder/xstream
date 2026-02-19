@@ -8,6 +8,7 @@ import { VideoTags } from '@/components/video/video-tags';
 import { RelatedVideos } from '@/components/video/related-videos';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
+import { formatNumber } from '@/lib/utils';
 import { getLikeStatus, getSubscriptionStatus } from '@/server/actions/engagement';
 import { getViewCount } from '@/server/actions/view';
 import { getComments } from '@/server/actions/comment';
@@ -122,7 +123,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
                  <p className="text-gray-600 dark:text-gray-400 mb-6">
                     This exclusive video is available only to premium subscribers. Upgrade now to watch instantly.
                  </p>
-                 <Link href="/premium" className="block w-full py-3 px-4 rounded-md shadow bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all">
+                 <Link href="/premium" className="block w-full py-3 px-4 rounded-lg shadow bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all">
                     Unlock Premium Access
                  </Link>
                  <Link href="/" className="block mt-4 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -157,12 +158,6 @@ export default async function VideoPage({ params }: VideoPageProps) {
       month: 'short',
       day: 'numeric',
     }).format(date);
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
   };
 
   return (

@@ -10,6 +10,7 @@ import { SidebarProvider } from '@/components/providers/sidebar-provider';
 import { AuthModalProvider } from '@/components/providers/auth-modal-provider';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { AuthUrlListener } from '@/components/auth/auth-url-listener';
+import { ConfirmDialogProvider } from '@/components/ui/confirm-dialog';
 import { Footer } from '@/components/layout/footer';
 import { Suspense } from 'react';
 import { AdUnit } from '@/components/ads/ad-unit';
@@ -48,6 +49,7 @@ export default async function RootLayout({
           >
             <SidebarProvider>
               <AuthModalProvider>
+                <ConfirmDialogProvider>
                 <AgeGateModal />
                 <CookieConsent />
                 <Navbar />
@@ -81,6 +83,7 @@ export default async function RootLayout({
                     <Footer />
                   </div>
                 </div>
+                </ConfirmDialogProvider>
               </AuthModalProvider>
             </SidebarProvider>
           </ThemeProvider>

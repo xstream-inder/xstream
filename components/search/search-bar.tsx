@@ -79,7 +79,7 @@ export function SearchBar({ initialQuery = '' }: SearchBarProps) {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
           placeholder="Search videos..."
-          className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-xred-500 focus:border-transparent"
         />
         <button
           type="submit"
@@ -123,7 +123,7 @@ export function SearchBar({ initialQuery = '' }: SearchBarProps) {
       {showSuggestions && suggestions.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
+          className="absolute z-50 w-full mt-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -132,7 +132,7 @@ export function SearchBar({ initialQuery = '' }: SearchBarProps) {
                 setQuery(suggestion);
                 handleSearch(suggestion);
               }}
-              className="w-full px-4 py-3 text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+              className="w-full px-4 py-3 text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-gray-400"

@@ -21,7 +21,7 @@ export function ClearHistoryButton() {
     <button
       onClick={handleClear}
       disabled={isPending}
-      className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50"
+      className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
     >
       {isPending ? 'Clearing...' : 'Clear All History'}
     </button>

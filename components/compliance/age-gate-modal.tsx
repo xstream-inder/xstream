@@ -34,7 +34,7 @@ export function AgeGateModal() {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-8 text-center">
+      <div className="bg-white dark:bg-dark-800 rounded-lg max-w-md w-full p-8 text-center">
         {/* Warning Icon */}
         <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
           <svg
@@ -74,7 +74,7 @@ export function AgeGateModal() {
               type="checkbox"
               checked={ageChecked}
               onChange={(e) => setAgeChecked(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-xred-600 focus:ring-xred-500 accent-xred-600 cursor-pointer"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
               I confirm that I am at least <strong>18 years of age</strong> or the age of majority in my jurisdiction.
@@ -86,7 +86,7 @@ export function AgeGateModal() {
               type="checkbox"
               checked={tosChecked}
               onChange={(e) => setTosChecked(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-xred-600 focus:ring-xred-500 accent-xred-600 cursor-pointer"
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
               I have read and agree to the{' '}
@@ -106,13 +106,13 @@ export function AgeGateModal() {
           <button
             onClick={handleEnter}
             disabled={!canEnter}
-            className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+            className="w-full px-6 py-3 bg-xred-600 text-white font-semibold rounded-lg hover:bg-xred-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-xred-600"
           >
             I am 18 or older - Enter
           </button>
           <button
             onClick={handleExit}
-            className="w-full px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="w-full px-6 py-3 bg-gray-200 dark:bg-dark-700 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-dark-600 transition-colors"
           >
             I am under 18 - Exit
           </button>

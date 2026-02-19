@@ -1,9 +1,6 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from '@/lib/utils';
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn };
 
 export const adConfig = {
   isEnabled: process.env.NEXT_PUBLIC_ADS_ENABLED === 'true',

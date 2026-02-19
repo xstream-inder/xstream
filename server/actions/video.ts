@@ -3,17 +3,14 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth-helper';
 import { revalidatePath } from 'next/cache';
-
-interface VideoUpdateData {
-  title?: string;
-  description?: string;
-  orientation?: 'STRAIGHT' | 'GAY' | 'LESBIAN' | 'TRANS';
-  isPremium?: boolean;
-  modelIds?: string[];
-  newModelNames?: string[]; // Add support for new models
-  categoryIds?: string[];
-  tags?: string[];
-}
+import { BunnyClient } from '@/lib/bunny/client';
+import { VideoStatus } from '@prisma/client';
+import {
+  videoUpdateSchema,
+  updateVideoStatusSchema,
+  uuidSchema,
+  type VideoUpdateData,
+} from '@/lib/validations/schemas';
 
 function generateSlug(name: string): string {
   return name
@@ -33,6 +30,18 @@ export async function finalizeUpload(
   metadata?: VideoUpdateData
 ) {
   try {
+    // Validate inputs
+    if (!bunnyVideoId || typeof bunnyVideoId !== 'string') {
+      return { success: false, error: 'Invalid video ID' };
+    }
+    if (metadata) {
+      const parsed = videoUpdateSchema.safeParse(metadata);
+      if (!parsed.success) {
+        return { success: false, error: `Invalid metadata: ${parsed.error.errors[0]?.message}` };
+      }
+      metadata = parsed.data;
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -189,7 +198,7 @@ export async function getAdminVideos(page = 1, limit = 20, status?: string) {
   }
 
   const skip = (page - 1) * limit;
-  const where = status ? { status: status as any } : {};
+  const where = status ? { status: status as VideoStatus } : {};
 
   const [videos, total] = await Promise.all([
     prisma.video.findMany({
@@ -212,10 +221,16 @@ export async function updateVideoStatus(videoId: string, status: string) {
   if (session?.user?.role !== 'ADMIN') {
      throw new Error('Unauthorized');
   }
+
+  // Validate inputs
+  const parsed = updateVideoStatusSchema.safeParse({ videoId, status });
+  if (!parsed.success) {
+    throw new Error(`Invalid input: ${parsed.error.errors[0]?.message}`);
+  }
   
   await prisma.video.update({
-    where: { id: videoId },
-    data: { status: status as any },
+    where: { id: parsed.data.videoId },
+    data: { status: parsed.data.status },
   });
   
   revalidatePath('/admin/videos');
@@ -224,6 +239,12 @@ export async function updateVideoStatus(videoId: string, status: string) {
 
 
 export async function deleteVideo(videoId: string) {
+  // Validate input
+  const parsedId = uuidSchema.safeParse(videoId);
+  if (!parsedId.success) {
+    throw new Error('Invalid video ID');
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
      throw new Error('Unauthorized');
@@ -231,7 +252,7 @@ export async function deleteVideo(videoId: string) {
 
   const video = await prisma.video.findUnique({
     where: { id: videoId },
-    select: { userId: true },
+    select: { userId: true, bunnyVideoId: true },
   });
 
   if (!video) {
@@ -242,7 +263,16 @@ export async function deleteVideo(videoId: string) {
     throw new Error('Forbidden');
   }
 
-  // TODO: Ideally we should also delete from Bunny Stream here via API
+  // Delete from Bunny CDN first (non-blocking failure — we still remove from DB)
+  if (video.bunnyVideoId) {
+    try {
+      const bunny = new BunnyClient();
+      await bunny.deleteVideo(video.bunnyVideoId);
+    } catch (err) {
+      console.error(`Failed to delete video from Bunny (${video.bunnyVideoId}):`, err);
+      // Continue with DB deletion — orphaned CDN videos can be cleaned up later
+    }
+  }
 
   await prisma.video.delete({
     where: { id: videoId },
@@ -288,6 +318,17 @@ export async function getUserVideos(page = 1, limit = 20) {
 }
 
 export async function updateVideo(videoId: string, data: VideoUpdateData) {
+  // Validate inputs
+  const parsedId = uuidSchema.safeParse(videoId);
+  if (!parsedId.success) {
+    throw new Error('Invalid video ID');
+  }
+  const parsedData = videoUpdateSchema.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error(`Invalid data: ${parsedData.error.errors[0]?.message}`);
+  }
+  data = parsedData.data;
+
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error('Unauthorized');

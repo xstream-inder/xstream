@@ -78,7 +78,7 @@ export function AuthModal() {
       const result = await registerUser(formDataObj);
 
       if (result.success) {
-        setSuccess('Account created! Please sign in.');
+        setSuccess(result.message || 'Account created! Please check your email.');
         setTimeout(() => {
           setSuccess('');
           openModal('signin');

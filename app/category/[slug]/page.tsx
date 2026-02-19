@@ -4,6 +4,7 @@ import { VideoCard } from '@/components/video/video-card';
 import Link from 'next/link';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
+import { formatNumber } from '@/lib/utils';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -85,12 +86,6 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     { id: 'top', label: 'Top Rated' },
   ];
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
   return (
     <div className="min-h-screen bg-white dark:bg-dark-900">
       {/* Header Section */}
@@ -119,7 +114,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                             <Link
                                 key={tab.id}
                                 href={`/category/${slug}?sort=${tab.id}`}
-                                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
                                     isActive 
                                     ? 'bg-white dark:bg-dark-600 text-gray-900 dark:text-white shadow-sm' 
                                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

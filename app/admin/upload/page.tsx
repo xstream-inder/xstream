@@ -1,6 +1,7 @@
 import { AdminUploadForm } from '@/components/admin/upload-form';
 import { auth } from '@/lib/auth-helper';
 import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 
 export default async function AdminUploadPage() {
   const session = await auth();
@@ -13,6 +14,12 @@ export default async function AdminUploadPage() {
     redirect('/');
   }
 
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+    select: { id: true, name: true },
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900 py-12">
       <div className="max-w-2xl mx-auto px-4">
@@ -22,7 +29,7 @@ export default async function AdminUploadPage() {
         </div>
         
         <div className="bg-white dark:bg-dark-800 rounded-lg shadow-xl p-6 border border-gray-200 dark:border-gray-800">
-          <AdminUploadForm />
+          <AdminUploadForm categories={categories} />
         </div>
       </div>
     </div>

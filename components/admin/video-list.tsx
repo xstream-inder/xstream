@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { updateVideoStatus, deleteVideo } from '@/server/actions/video';
 import Link from 'next/link';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface Video {
   id: string;
@@ -24,6 +25,8 @@ interface VideoListProps {
 export function VideoList({ initialVideos, currentPage, totalPages }: VideoListProps) {
   const [videos, setVideos] = useState<Video[]>(initialVideos);
   const [loading, setLoading] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     setVideos(initialVideos);
@@ -31,27 +34,36 @@ export function VideoList({ initialVideos, currentPage, totalPages }: VideoListP
 
   const handleStatusChange = async (videoId: string, newStatus: string) => {
     setLoading(videoId);
+    setStatusError(null);
     try {
       await updateVideoStatus(videoId, newStatus);
       setVideos(videos.map(v => v.id === videoId ? { ...v, status: newStatus } : v));
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status');
+      setStatusError('Failed to update status');
     } finally {
       setLoading(null);
     }
   };
 
   const handleDelete = async (videoId: string) => {
-    if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) return;
+    const confirmed = await confirm({
+      title: 'Delete Video',
+      message: 'Are you sure you want to delete this video? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     
     setLoading(videoId);
+    setStatusError(null);
     try {
       await deleteVideo(videoId);
       setVideos(videos.filter(v => v.id !== videoId));
     } catch (error) {
       console.error('Failed to delete video:', error);
-      alert('Failed to delete video');
+      setStatusError('Failed to delete video');
     } finally {
       setLoading(null);
     }
@@ -59,6 +71,12 @@ export function VideoList({ initialVideos, currentPage, totalPages }: VideoListP
 
   return (
     <div className="space-y-4">
+      {statusError && (
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center justify-between">
+          <span>{statusError}</span>
+          <button onClick={() => setStatusError(null)} className="text-red-400 hover:text-red-600">✕</button>
+        </div>
+      )}
       <div className="overflow-x-auto bg-white dark:bg-dark-800 rounded-lg shadow border border-gray-200 dark:border-gray-800">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-dark-700">
@@ -118,7 +136,7 @@ export function VideoList({ initialVideos, currentPage, totalPages }: VideoListP
         <div className="flex justify-center items-center mt-6 gap-4">
           <Link
             href={`/admin/videos?page=${currentPage - 1}`}
-            className={`px-4 py-2 text-sm font-medium rounded-md bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 ${
+            className={`px-4 py-2 text-sm font-medium rounded-lg bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 ${
               currentPage <= 1 ? 'pointer-events-none opacity-50' : ''
             }`}
           >
@@ -129,7 +147,7 @@ export function VideoList({ initialVideos, currentPage, totalPages }: VideoListP
           </span>
           <Link
             href={`/admin/videos?page=${currentPage + 1}`}
-            className={`px-4 py-2 text-sm font-medium rounded-md bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 ${
+            className={`px-4 py-2 text-sm font-medium rounded-lg bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 ${
               currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''
             }`}
           >

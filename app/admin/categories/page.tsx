@@ -28,25 +28,25 @@ export default async function AdminCategoriesPage() {
       <h1 className="text-3xl font-bold mb-8 dark:text-white">Manage Categories</h1>
       
       {/* Add Form */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+      <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow mb-8">
         <h2 className="text-xl font-semibold mb-4 dark:text-white">Add New Category</h2>
         <form action={addCategory} className="flex gap-4">
           <input
             name="name"
             placeholder="Category Name"
-            className="flex-1 px-4 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="flex-1 px-4 py-2 border rounded-lg dark:bg-dark-700 dark:border-gray-600 dark:text-white"
             required
           />
-          <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+          <button type="submit" className="bg-xred-600 text-white px-6 py-2 rounded-lg hover:bg-xred-700">
             Add
           </button>
         </form>
       </div>
 
       {/* List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-dark-800 rounded-lg shadow overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+          <thead className="bg-gray-50 dark:bg-dark-700">
             <tr>
               <th className="px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-300">Name</th>
               <th className="px-6 py-3 text-sm font-medium text-gray-500 dark:text-gray-300">Slug</th>
@@ -56,7 +56,7 @@ export default async function AdminCategoriesPage() {
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {categories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-dark-700">
                 <td className="px-6 py-4 dark:text-white">{cat.name}</td>
                 <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{cat.slug}</td>
                 <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{cat.videoCount}</td>

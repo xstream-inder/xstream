@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-900 p-4">
-       <div className="max-w-screen-2xl mx-auto">
+       <div className="max-w-[1800px] mx-auto">
           {/* Header Skeleton */}
           <div className="flex gap-4 mb-6">
              {[1, 2, 3, 4, 5, 6].map(i => (

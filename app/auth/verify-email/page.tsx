@@ -25,7 +25,7 @@ function VerifyEmailContent() {
         if (data.error) {
           setError(data.error);
         } else {
-          setSuccess(data.success);
+          setSuccess(data.message);
         }
       })
       .catch(() => {
@@ -39,7 +39,7 @@ function VerifyEmailContent() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-dark-900">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
             Confirming your verification
@@ -54,12 +54,12 @@ function VerifyEmailContent() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
           )}
           {success && (
-            <div className="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md w-full text-center">
+            <div className="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg w-full text-center">
               {success}
             </div>
           )}
           {error && (
-            <div className="p-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md w-full text-center">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400 w-full text-center">
               {error}
             </div>
           )}

@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { UserMenu } from '@/components/auth/user-menu';
 import { useSidebar } from '@/components/providers/sidebar-provider';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { NotificationBell } from '@/components/layout/notification-bell';
 
 export function Navbar() {
   const { toggle } = useSidebar();
@@ -72,7 +73,7 @@ export function Navbar() {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md leading-5 bg-gray-50 dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-dark-900 focus:ring-1 focus:ring-xred-500 focus:border-xred-500 sm:text-sm transition-colors"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-dark-900 focus:ring-1 focus:ring-xred-500 focus:border-xred-500 sm:text-sm transition-colors"
                   placeholder="Search videos..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -103,7 +104,7 @@ export function Navbar() {
             <div className="hidden sm:block">
               <Link
                 href="/upload"
-                className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-xred-600 hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 transition-colors"
+                className="flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-xred-600 hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 transition-colors"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -112,6 +113,7 @@ export function Navbar() {
               </Link>
             </div>
 
+            <NotificationBell />
             <UserMenu />
           </div>
         </div>
@@ -124,7 +126,7 @@ export function Navbar() {
             <input
               autoFocus
               type="text"
-              className="block w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-700 rounded-md leading-5 bg-gray-50 dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-dark-900 focus:ring-1 focus:ring-xred-500 focus:border-xred-500 text-base"
+              className="block w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-dark-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-dark-900 focus:ring-1 focus:ring-xred-500 focus:border-xred-500 text-base"
               placeholder="Search videos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

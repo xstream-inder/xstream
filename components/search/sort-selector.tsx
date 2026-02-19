@@ -19,7 +19,7 @@ export function SortSelector({ currentSort, query }: { currentSort: string; quer
         id="sort-select"
         value={currentSort}
         onChange={handleChange}
-        className="block min-w-[120px] rounded-md border-gray-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 pl-3 pr-10"
+        className="block min-w-[120px] rounded-lg border-gray-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-xred-500 sm:text-sm py-2 pl-3 pr-10"
       >
         <option value="relevance">Relevance</option>
         <option value="recent">Upload Date</option>

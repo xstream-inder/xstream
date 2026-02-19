@@ -5,31 +5,60 @@ import Link from 'next/link';
 
 const COOKIE_CONSENT_KEY = 'cookie_consent';
 
-type ConsentLevel = 'all' | 'essential' | null;
+interface CookiePreferences {
+  essential: boolean;   // Always true
+  analytics: boolean;
+  functionality: boolean;
+  advertising: boolean;
+}
+
+const DEFAULT_PREFERENCES: CookiePreferences = {
+  essential: true,
+  analytics: false,
+  functionality: false,
+  advertising: false,
+};
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [preferences, setPreferences] = useState<CookiePreferences>({
+    essential: true,
+    analytics: true,
+    functionality: true,
+    advertising: true,
+  });
 
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      // Small delay so it doesn't compete with the age-gate modal
       const timer = setTimeout(() => setVisible(true), 500);
       return () => clearTimeout(timer);
     }
   }, []);
 
-  const acceptConsent = (level: ConsentLevel) => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, level || 'essential');
+  const saveConsent = (prefs: CookiePreferences) => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(prefs));
     setVisible(false);
+  };
+
+  const acceptAll = () => {
+    saveConsent({ essential: true, analytics: true, functionality: true, advertising: true });
+  };
+
+  const acceptEssentialOnly = () => {
+    saveConsent(DEFAULT_PREFERENCES);
+  };
+
+  const saveCustomPreferences = () => {
+    saveConsent({ ...preferences, essential: true });
   };
 
   if (!visible) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[9998] animate-slide-up">
-      <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-2xl">
+      <div className="bg-white dark:bg-dark-950 border-t border-gray-200 dark:border-gray-700 shadow-2xl">
         <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex flex-col gap-4">
             {/* Main banner */}
@@ -57,19 +86,19 @@ export function CookieConsent() {
               <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                 <button
                   onClick={() => setShowDetails(!showDetails)}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
                 >
                   Customize
                 </button>
                 <button
-                  onClick={() => acceptConsent('essential')}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  onClick={() => acceptEssentialOnly()}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-800 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors"
                 >
                   Essential Only
                 </button>
                 <button
-                  onClick={() => acceptConsent('all')}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                  onClick={() => acceptAll()}
+                  className="px-4 py-2 text-sm font-medium text-white bg-xred-600 rounded-lg hover:bg-xred-700 transition-colors shadow-sm"
                 >
                   Accept All
                 </button>
@@ -81,7 +110,7 @@ export function CookieConsent() {
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Essential */}
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-800/50 rounded-lg">
                     <input
                       type="checkbox"
                       checked
@@ -97,10 +126,11 @@ export function CookieConsent() {
                   </div>
 
                   {/* Performance */}
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-800/50 rounded-lg">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={preferences.analytics}
+                      onChange={(e) => setPreferences(p => ({ ...p, analytics: e.target.checked }))}
                       className="mt-0.5 h-4 w-4 rounded accent-blue-600 cursor-pointer"
                     />
                     <div>
@@ -112,10 +142,11 @@ export function CookieConsent() {
                   </div>
 
                   {/* Functionality */}
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-800/50 rounded-lg">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={preferences.functionality}
+                      onChange={(e) => setPreferences(p => ({ ...p, functionality: e.target.checked }))}
                       className="mt-0.5 h-4 w-4 rounded accent-blue-600 cursor-pointer"
                     />
                     <div>
@@ -127,10 +158,11 @@ export function CookieConsent() {
                   </div>
 
                   {/* Advertising */}
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-dark-800/50 rounded-lg">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      checked={preferences.advertising}
+                      onChange={(e) => setPreferences(p => ({ ...p, advertising: e.target.checked }))}
                       className="mt-0.5 h-4 w-4 rounded accent-blue-600 cursor-pointer"
                     />
                     <div>
@@ -144,8 +176,8 @@ export function CookieConsent() {
 
                 <div className="flex justify-end">
                   <button
-                    onClick={() => acceptConsent('all')}
-                    className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                    onClick={() => saveCustomPreferences()}
+                    className="px-5 py-2 text-sm font-medium text-white bg-xred-600 rounded-lg hover:bg-xred-700 transition-colors shadow-sm"
                   >
                     Save Preferences
                   </button>

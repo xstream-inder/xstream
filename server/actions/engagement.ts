@@ -85,17 +85,8 @@ export async function toggleLike(videoId: string): Promise<LikeResponse> {
       newCount = await redis.decr(likeCountKey);
       newLikedState = false;
 
-      // Async DB sync (fire and forget)
-      prisma.like
-        .delete({
-          where: {
-            userId_videoId: {
-              userId,
-              videoId,
-            },
-          },
-        })
-        .catch((err) => console.error('DB unlike sync failed:', err));
+      // DB sync with retry
+      syncUnlike(userId, videoId);
     } else {
       // Like: Add to set and increment counter
       await redis.sadd(likesSetKey, userId);
@@ -103,15 +94,8 @@ export async function toggleLike(videoId: string): Promise<LikeResponse> {
       newCount = await redis.incr(likeCountKey);
       newLikedState = true;
 
-      // Async DB sync (fire and forget)
-      prisma.like
-        .create({
-          data: {
-            userId,
-            videoId,
-          },
-        })
-        .catch((err) => console.error('DB like sync failed:', err));
+      // DB sync with retry
+      syncLike(userId, videoId);
     }
 
     // Set expiry on count key (30 days)
@@ -311,6 +295,10 @@ export async function toggleSubscription(creatorId: string): Promise<Subscriptio
       });
       isSubscribed = true;
       subscriberCount++;
+
+      // Notify creator of new subscriber (non-blocking)
+      const { notifyNewSubscriber } = await import('@/server/actions/notifications');
+      notifyNewSubscriber(creatorId, session.user.username || 'Someone').catch(() => {});
     }
 
     revalidatePath(`/profile/${creator.username}`);
@@ -373,3 +361,69 @@ export async function getSubscriptionStatus(creatorId: string): Promise<{
   }
 }
 
+// ============================================================================
+// INTERNAL: DB sync helpers with retry
+// ============================================================================
+
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [500, 2000, 5000]; // exponential-ish backoff (ms)
+
+function syncLike(userId: string, videoId: string, attempt = 0) {
+  prisma.like
+    .create({
+      data: { userId, videoId },
+    })
+    .then(() => {
+      // Also sync the aggregate count to DB
+      return prisma.video.update({
+        where: { id: videoId },
+        data: { likesCount: { increment: 1 } },
+      });
+    })
+    .catch(async (err) => {
+      // Duplicate key means it's already synced — not an error
+      if (err?.code === 'P2002') return;
+
+      if (attempt < MAX_RETRIES) {
+        console.warn(`DB like sync retry ${attempt + 1}/${MAX_RETRIES} for video ${videoId}`);
+        await delay(RETRY_DELAYS[attempt] || 5000);
+        syncLike(userId, videoId, attempt + 1);
+      } else {
+        // After all retries, enqueue for later reconciliation
+        console.error(`DB like sync FAILED after ${MAX_RETRIES} retries for user=${userId} video=${videoId}:`, err);
+        redis.sadd('sync:failed:likes', `${userId}:${videoId}`).catch(() => {});
+      }
+    });
+}
+
+function syncUnlike(userId: string, videoId: string, attempt = 0) {
+  prisma.like
+    .delete({
+      where: {
+        userId_videoId: { userId, videoId },
+      },
+    })
+    .then(() => {
+      return prisma.video.update({
+        where: { id: videoId },
+        data: { likesCount: { decrement: 1 } },
+      });
+    })
+    .catch(async (err) => {
+      // Record not found means it's already deleted — not an error
+      if (err?.code === 'P2025') return;
+
+      if (attempt < MAX_RETRIES) {
+        console.warn(`DB unlike sync retry ${attempt + 1}/${MAX_RETRIES} for video ${videoId}`);
+        await delay(RETRY_DELAYS[attempt] || 5000);
+        syncUnlike(userId, videoId, attempt + 1);
+      } else {
+        console.error(`DB unlike sync FAILED after ${MAX_RETRIES} retries for user=${userId} video=${videoId}:`, err);
+        redis.sadd('sync:failed:unlikes', `${userId}:${videoId}`).catch(() => {});
+      }
+    });
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

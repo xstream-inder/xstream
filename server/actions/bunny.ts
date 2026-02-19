@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { createHash } from 'crypto';
 import { auth } from '@/lib/auth-helper';
+import { uploadSignatureSchema } from '@/lib/validations/schemas';
 
 const BUNNY_API_KEY = process.env.BUNNY_API_KEY;
 const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
@@ -26,6 +27,19 @@ interface UploadSignatureResponse {
 export async function createUploadSignature(
   fileName: string
 ): Promise<UploadSignatureResponse> {
+  // Validate input
+  const parsed = uploadSignatureSchema.safeParse({ fileName });
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors[0]?.message || 'Invalid file name');
+  }
+  fileName = parsed.data.fileName;
+
+  // Auth check FIRST — before making external API calls
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('User not authenticated');
+  }
+
   if (!BUNNY_API_KEY || !BUNNY_LIBRARY_ID) {
     throw new Error('Bunny CDN credentials not configured');
   }
@@ -54,12 +68,6 @@ export async function createUploadSignature(
     const videoData: BunnyVideoResponse = await response.json();
 
     // Step 2: Create database entry
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      throw new Error('User not authenticated');
-    }
-
     await prisma.video.create({
       data: {
         bunnyVideoId: videoData.guid,

@@ -34,7 +34,7 @@ export default async function ProfilePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white dark:bg-dark-800 rounded-lg shadow p-6 mb-6 border border-gray-200 dark:border-dark-700">
         <div className="flex items-start gap-6">
-          <div className="h-24 w-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+          <div className="h-24 w-24 rounded-full bg-xred-600 flex items-center justify-center text-white text-3xl font-bold">
             {user.username[0].toUpperCase()}
           </div>
           

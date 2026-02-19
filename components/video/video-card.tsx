@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatDuration, formatViews, formatTimeAgo } from '@/lib/utils';
 
 interface VideoCardProps {
   video: {
@@ -27,61 +28,32 @@ interface VideoCardProps {
 
 const BUNNY_PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE || 'vz-xxxxx.b-cdn.net';
 
+const getPreviewUrl = (video: VideoCardProps['video']) => {
+  if (video.previewUrl) return video.previewUrl;
+  return `https://${BUNNY_PULL_ZONE}/${video.bunnyVideoId}/preview.webp`;
+};
+
+const getThumbnailUrl = (video: VideoCardProps['video']) => {
+  return video.thumbnailUrl || `https://${BUNNY_PULL_ZONE}/${video.bunnyVideoId}/thumbnail.jpg`;
+};
+
+const getVideoBadge = (video: VideoCardProps['video']) => {
+  if (video.resolutions && video.resolutions.length > 0) {
+    if (video.resolutions.some(r => r.includes('4K') || r.includes('2160p'))) return '4K';
+    if (video.resolutions.some(r => r.includes('2K') || r.includes('1440p'))) return '2K';
+    if (video.resolutions.some(r => r.includes('1080p'))) return 'HD';
+    if (video.resolutions.some(r => r.includes('720p'))) return 'HD';
+  }
+  return 'HD';
+};
+
 export function VideoCard({ video }: VideoCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [previewError, setPreviewError] = useState(false);
-  const formatDuration = (seconds: number | null): string => {
-    if (!seconds) return '00:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
-  const formatViews = (count: number): string => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
-    } else if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
-    }
-    return count.toString();
-  };
-
-  const formatTimeAgo = (dateInput: Date | string): string => {
-    const date = new Date(dateInput);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
-    return `${Math.floor(diffInSeconds / 31536000)}y ago`;
-  };
-
-  // Generate preview URL from Bunny CDN
-  const getPreviewUrl = () => {
-    if (video.previewUrl) return video.previewUrl;
-    // If we are here, we are hovering and haven't errored yet, so try the preview URL
-    return `https://${BUNNY_PULL_ZONE}/${video.bunnyVideoId}/preview.webp`;
-  };
-
-  const getThumbnailUrl = () => {
-    return video.thumbnailUrl || `https://${BUNNY_PULL_ZONE}/${video.bunnyVideoId}/thumbnail.jpg`;
-  };
-
-  const getVideoBadge = () => {
-    if (video.resolutions && video.resolutions.length > 0) {
-      if (video.resolutions.some(r => r.includes('4K') || r.includes('2160p'))) return '4K';
-      if (video.resolutions.some(r => r.includes('2K') || r.includes('1440p'))) return '2K';
-      if (video.resolutions.some(r => r.includes('1080p'))) return 'HD';
-      if (video.resolutions.some(r => r.includes('720p'))) return 'HD';
-    }
-    // Fallback if resolutions array is empty but it's new content
-    return 'HD'; 
-  };
-  
-  const badge = getVideoBadge();
+  const previewUrl = getPreviewUrl(video);
+  const thumbnailUrl = getThumbnailUrl(video);
+  const badge = getVideoBadge(video);
 
   return (
     <Link 
@@ -94,7 +66,7 @@ export function VideoCard({ video }: VideoCardProps) {
         {/* Image / Preview */}
         {isHovering && !previewError ? (
           <Image
-            src={getPreviewUrl()}
+            src={previewUrl}
             alt={video.title}
             fill
             className="object-cover"
@@ -103,7 +75,7 @@ export function VideoCard({ video }: VideoCardProps) {
           />
         ) : (
           <Image
-            src={getThumbnailUrl()}
+            src={thumbnailUrl}
             alt={video.title}
             fill
             className="object-cover"

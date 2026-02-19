@@ -19,7 +19,6 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid()) @db.Uuid
-  clerkId   String?  @unique @map("clerk_id") // Clerk Auth integration (nullable for flexibility)
   email     String   @unique
   username  String   @unique // Public-facing unique handle
   password  String?  // Hashed password for credentials auth
@@ -49,10 +48,15 @@ model User {
   likes        Like[]
   commentLikes CommentLike[]
   videoViews   VideoView[]    @relation("UserViews")
+  watchHistory WatchHistory[]
+  reports      Report[]       @relation("ReportedBy")
+  reviewedReports Report[]    @relation("ReviewedReports")
   subscriptions Subscription[] @relation("Subscriber") // Users this user subscribes to
   subscribers   Subscription[] @relation("Creator")    // Users subscribed to this user
+  model         Model?         // Optional linked Model profile
   accounts      Account[]
   sessions      Session[]
+  notifications Notification[] @relation("NotificationRecipient")
 
   @@map("users")
 }
@@ -72,7 +76,7 @@ enum UserRole {
 model Video {
   id            String      @id @default(uuid()) @db.Uuid
   bunnyVideoId  String      @unique @map("bunny_video_id") // External Bunny Stream video ID (critical reference)
-  tags          String[]    @default([])
+  
   // Ownership
   userId        String      @map("user_id") @db.Uuid
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -102,7 +106,6 @@ model Video {
   // Add search index for full-text search
   @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, name: "title_search_idx")
   @@index([description(ops: raw("gin_trgm_ops"))], type: Gin, name: "description_search_idx")
-  @@index([tags(ops: raw("array_ops"))], type: Gin, name: "tags_search_idx")
   
   // Adult industry specific
   orientation   VideoOrientation?
@@ -114,6 +117,8 @@ model Video {
   comments        Comment[]
   likes           Like[]
   videoViews      VideoView[]
+  watchHistory    WatchHistory[]
+  reports         Report[]
   videoTags       VideoTag[]  // Many-to-many through join table
   videoModels     VideoModel[]
   videoCategories VideoCategory[]
@@ -224,6 +229,69 @@ model VideoView {
 }
 
 // ============================================================================
+// WATCH HISTORY (Separate from analytics to allow clearing without data loss)
+// ============================================================================
+
+model WatchHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  videoId   String   @map("video_id") @db.Uuid
+  watchedAt DateTime @default(now()) @map("watched_at")
+  
+  // Optional: track watch progress for "continue watching" feature
+  progressSeconds Int @default(0) @map("progress_seconds")
+  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  // One history entry per user per video (upsert on re-watch)
+  @@unique([userId, videoId])
+  @@index([userId, watchedAt(sort: Desc)]) // For paginated history feed
+  @@index([videoId])
+  @@map("watch_history")
+}
+
+// ============================================================================
+// CONTENT MODERATION
+// ============================================================================
+
+model Report {
+  id          String       @id @default(uuid()) @db.Uuid
+  videoId     String       @map("video_id") @db.Uuid
+  userId      String?      @map("user_id") @db.Uuid // Nullable for anonymous reports
+  
+  reason      String       @db.VarChar(100) // e.g., "illegal", "non-consensual", "underage", "copyright", "spam"
+  description String?      @db.Text         // Additional details from the reporter
+  status      ReportStatus @default(PENDING)
+  
+  // Admin moderation
+  reviewedBy  String?      @map("reviewed_by") @db.Uuid
+  reviewedAt  DateTime?    @map("reviewed_at")
+  adminNotes  String?      @map("admin_notes") @db.Text
+  
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user  User? @relation("ReportedBy", fields: [userId], references: [id], onDelete: SetNull)
+  reviewer User? @relation("ReviewedReports", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([videoId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("reports")
+}
+
+enum ReportStatus {
+  PENDING   // Awaiting review
+  REVIEWED  // Reviewed, no action needed
+  ACTIONED  // Action taken (e.g., video removed)
+  DISMISSED // Report rejected
+
+  @@map("report_status")
+}
+
+// ============================================================================
 // DISCOVERY & CATEGORIZATION
 // ============================================================================
 
@@ -271,6 +339,42 @@ model Subscription {
 }
 
 // ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid       // Recipient
+  type      NotificationType
+  
+  // Polymorphic reference
+  title     String           @db.VarChar(200)
+  message   String?          @db.Text
+  linkUrl   String?          @map("link_url")                // Where clicking should navigate
+  
+  // Read tracking
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
+  
+  createdAt DateTime         @default(now()) @map("created_at")
+  
+  user User @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NEW_VIDEO      // Creator uploaded a new video
+  NEW_SUBSCRIBER // Someone subscribed to you
+  VIDEO_COMMENT  // Someone commented on your video
+  SYSTEM         // Platform announcements
+
+  @@map("notification_type")
+}
+
+// ============================================================================
 // NEXTAUTH TABLES (for session management)
 // ============================================================================
 
@@ -280,13 +384,13 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
+  refreshToken      String? @map("refresh_token") @db.Text
+  accessToken       String? @map("access_token") @db.Text
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
   scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+  idToken           String? @map("id_token") @db.Text
+  sessionState      String? @map("session_state")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -295,6 +399,8 @@ model Account {
   @@map("accounts")
 }
 
+// Note: Session model is required by PrismaAdapter but unused with JWT strategy.
+// Kept for adapter compatibility if switching to database sessions or adding OAuth.
 model Session {
   id           String   @id @default(uuid()) @db.Uuid
   sessionToken String   @unique @map("session_token")
@@ -336,6 +442,10 @@ model Model {
   slug        String   @unique @db.VarChar(100)
   avatarUrl   String?  @map("avatar_url")
   bio         String?  @db.Text
+  
+  // Optional link to a User account (for creators who are also platform users)
+  userId      String?  @unique @map("user_id") @db.Uuid
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   
   // Demographics
   gender      ModelGender?

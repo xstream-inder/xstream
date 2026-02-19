@@ -7,7 +7,7 @@ import { authConfig } from './auth.config';
 
 export const authOptions: NextAuthConfig = {
   ...authConfig,
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: PrismaAdapter(prisma) as NextAuthConfig['adapter'],
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -15,7 +15,7 @@ export const authOptions: NextAuthConfig = {
         email: { label: 'Email', type: 'email', placeholder: 'user@example.com' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials): Promise<any> {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
         }
@@ -29,6 +29,7 @@ export const authOptions: NextAuthConfig = {
             password: true,
             role: true,
             avatarUrl: true,
+            isVerified: true,
           },
         });
 
@@ -43,6 +44,11 @@ export const authOptions: NextAuthConfig = {
 
         if (!isPasswordValid) {
           throw new Error('Invalid email or password');
+        }
+
+        // Enforce email verification
+        if (!user.isVerified) {
+          throw new Error('Please verify your email address before signing in. Check your inbox for the verification link.');
         }
 
         return {

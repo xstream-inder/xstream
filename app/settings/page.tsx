@@ -73,7 +73,7 @@ export default async function SettingsPage() {
                     <form action={createCustomerPortal}>
                        <button 
                           type="submit"
-                          className="px-4 py-2 border border-blue-200 text-blue-600 rounded-md hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
+                          className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
                        >
                           Manage Subscription
                        </button>
@@ -81,7 +81,7 @@ export default async function SettingsPage() {
                  ) : (
                     <Link
                        href="/premium"
-                       className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                       className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                     >
                        Upgrade to Premium
                     </Link>

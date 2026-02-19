@@ -8,13 +8,13 @@ export const verifyEmail = async (token: string) => {
   });
 
   if (!existingToken) {
-    return { error: 'Token does not exist!' };
+    return { success: false, error: 'Token does not exist!' };
   }
 
   const hasExpired = new Date(existingToken.expires) < new Date();
 
   if (hasExpired) {
-    return { error: 'Token has expired!' };
+    return { success: false, error: 'Token has expired!' };
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -22,7 +22,7 @@ export const verifyEmail = async (token: string) => {
   });
 
   if (!existingUser) {
-    return { error: 'Email does not exist!' };
+    return { success: false, error: 'Email does not exist!' };
   }
 
   await prisma.user.update({
@@ -37,5 +37,5 @@ export const verifyEmail = async (token: string) => {
     where: { id: existingToken.id },
   });
 
-  return { success: 'Email verified!' };
+  return { success: true, message: 'Email verified!' };
 };

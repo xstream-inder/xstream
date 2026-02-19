@@ -5,13 +5,20 @@ import { generatePasswordResetToken } from '@/lib/tokens';
 import { sendPasswordResetEmail } from '@/lib/mail';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { passwordResetRateLimiter } from '@/lib/redis';
+import { getClientIpHash } from '@/lib/utils/security';
 
 const ResetSchema = z.object({
   email: z.string().email(),
 });
 
 const NewPasswordSchema = z.object({
-  password: z.string().min(6),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
   token: z.string().optional(),
 });
 
@@ -19,15 +26,23 @@ export const resetPassword = async (email: string) => {
   const validatedFields = ResetSchema.safeParse({ email });
 
   if (!validatedFields.success) {
-    return { error: 'Invalid email!' };
+    return { success: false, error: 'Invalid email!' };
+  }
+
+  // Rate limiting by IP
+  const ipHash = await getClientIpHash();
+  const { success: allowed } = await passwordResetRateLimiter.limit(ipHash);
+  if (!allowed) {
+    return { success: false, error: 'Too many reset attempts. Please try again later.' };
   }
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
 
+  // Always return success to prevent user enumeration
   if (!existingUser) {
-    return { error: 'Email not found!' };
+    return { success: true, message: 'If an account exists with that email, a reset link has been sent.' };
   }
 
   const passwordResetToken = await generatePasswordResetToken(email);
@@ -36,18 +51,18 @@ export const resetPassword = async (email: string) => {
     passwordResetToken.token
   );
 
-  return { success: 'Reset email sent!' };
+  return { success: true, message: 'If an account exists with that email, a reset link has been sent.' };
 };
 
 export const newPassword = async (password: string, token: string | null) => {
   if (!token) {
-    return { error: 'Missing token!' };
+    return { success: false, error: 'Missing token!' };
   }
 
   const validatedFields = NewPasswordSchema.safeParse({ password, token });
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields!' };
+    return { success: false, error: 'Invalid fields!' };
   }
 
   const existingToken = await prisma.passwordResetToken.findFirst({
@@ -55,13 +70,13 @@ export const newPassword = async (password: string, token: string | null) => {
   });
 
   if (!existingToken) {
-    return { error: 'Invalid token!' };
+    return { success: false, error: 'Invalid token!' };
   }
 
   const hasExpired = new Date(existingToken.expires) < new Date();
 
   if (hasExpired) {
-    return { error: 'Token has expired!' };
+    return { success: false, error: 'Token has expired!' };
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -69,10 +84,10 @@ export const newPassword = async (password: string, token: string | null) => {
   });
 
   if (!existingUser) {
-    return { error: 'Email does not exist!' };
+    return { success: false, error: 'Email does not exist!' };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   await prisma.user.update({
     where: { id: existingUser.id },
@@ -83,5 +98,5 @@ export const newPassword = async (password: string, token: string | null) => {
     where: { id: existingToken.id },
   });
 
-  return { success: 'Password updated!' };
+  return { success: true, message: 'Password updated!' };
 };

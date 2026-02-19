@@ -78,7 +78,11 @@ export async function searchVideos(
           AND (
             v.title ILIKE ${`%${searchQuery}%`}
             OR v.description ILIKE ${`%${searchQuery}%`}
-            OR ${searchQuery} = ANY(v.tags)
+            OR EXISTS (
+              SELECT 1 FROM video_tags vt
+              JOIN tags t ON t.id = vt.tag_id
+              WHERE vt.video_id = v.id AND t.name ILIKE ${`%${searchQuery}%`}
+            )
             OR similarity(v.title, ${searchQuery}) > 0.1
           )
         ORDER BY 
@@ -108,7 +112,6 @@ export async function searchVideos(
         OR: [
           { title: { contains: searchQuery, mode: 'insensitive' } },
           { description: { contains: searchQuery, mode: 'insensitive' } },
-          { tags: { has: searchQuery } }, // Case sensitive check for tags array
           { videoTags: { some: { tag: { name: { contains: searchQuery, mode: 'insensitive' } } } } }
         ],
       },
@@ -154,36 +157,32 @@ export async function searchVideos(
  */
 export async function getPopularSearches(limit: number = 10): Promise<string[]> {
   try {
-    // Get popular tags from published videos
-    const popularTags = await prisma.video.findMany({
+    // Get popular tags from the Tag table via video relationships 
+    const popularTags = await prisma.tag.findMany({
       where: {
-        status: 'PUBLISHED',
-        tags: {
-          isEmpty: false,
+        videos: {
+          some: {
+            video: {
+              status: 'PUBLISHED',
+            },
+          },
         },
       },
       select: {
-        tags: true,
+        name: true,
+        _count: {
+          select: { videos: true },
+        },
       },
-      take: 100,
       orderBy: {
-        viewsCount: 'desc',
+        videos: {
+          _count: 'desc',
+        },
       },
+      take: limit,
     });
 
-    // Count tag frequency
-    const tagCounts = new Map<string, number>();
-    popularTags.forEach((video) => {
-      video.tags.forEach((tag) => {
-        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      });
-    });
-
-    // Return top tags
-    return Array.from(tagCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
-      .map(([tag]) => tag);
+    return popularTags.map((tag) => tag.name);
   } catch (error) {
     console.error('Failed to get popular searches:', error);
     return [];

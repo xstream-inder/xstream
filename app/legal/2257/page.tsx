@@ -15,7 +15,7 @@ export default function Compliance2257Page() {
           In compliance with 18 U.S.C. § 2257 and 28 C.F.R. § 75, eddythedaddy maintains records for all content creators who participate in our monetization program or are verified as "Models" on our platform.
         </p>
 
-        <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg my-6">
+        <div className="bg-gray-100 dark:bg-dark-800 p-6 rounded-lg my-6">
           <h3 className="text-lg font-semibold mb-2">Custodian of Records:</h3>
           <p>
             <strong>eddythedaddy Compliance Dept.</strong><br />

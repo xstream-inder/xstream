@@ -7,8 +7,11 @@ import { adConfig } from '@/lib/ads';
 interface BestVideosPageProps {
   searchParams: Promise<{
     sort?: string;
+    page?: string;
   }>;
 }
+
+const VIDEOS_PER_PAGE = 36;
 
 export const metadata = {
   title: 'Best Videos - eddythedaddy',
@@ -16,8 +19,9 @@ export const metadata = {
 };
 
 export default async function BestVideosPage({ searchParams }: BestVideosPageProps) {
-  const { sort } = await searchParams;
-  const currentSort = sort === 'rated' ? 'rated' : 'views';
+  const params = await searchParams;
+  const currentSort = params.sort === 'rated' ? 'rated' : 'views';
+  const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
 
   let orderBy: any = {};
   if (currentSort === 'rated') {
@@ -26,12 +30,16 @@ export default async function BestVideosPage({ searchParams }: BestVideosPagePro
     orderBy = { viewsCount: 'desc' };
   }
 
+  const totalCount = await prisma.video.count({ where: { status: 'PUBLISHED' } });
+  const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
+
   const videos = await prisma.video.findMany({
     where: {
       status: 'PUBLISHED',
     },
     orderBy,
-    take: 60,
+    take: VIDEOS_PER_PAGE,
+    skip: (page - 1) * VIDEOS_PER_PAGE,
     include: {
       user: {
         select: {
@@ -50,14 +58,14 @@ export default async function BestVideosPage({ searchParams }: BestVideosPagePro
                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize flex items-center gap-2">
                     Best Videos
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-dark-800 px-2 py-1 rounded-full">
-                        Top 60
+                        {totalCount} videos
                     </span>
                 </h1>
 
                 <div className="flex bg-gray-200 dark:bg-dark-800 p-1 rounded-lg self-start">
                     <Link
                         href="/best?sort=views"
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
                             currentSort === 'views' 
                             ? 'bg-white dark:bg-dark-600 text-gray-900 dark:text-white shadow-sm' 
                             : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -67,7 +75,7 @@ export default async function BestVideosPage({ searchParams }: BestVideosPagePro
                     </Link>
                     <Link
                         href="/best?sort=rated"
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
                             currentSort === 'rated' 
                             ? 'bg-white dark:bg-dark-600 text-gray-900 dark:text-white shadow-sm' 
                             : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -107,6 +115,39 @@ export default async function BestVideosPage({ searchParams }: BestVideosPagePro
             {videos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-4">
+            {page <= 1 ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-lg opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Previous
+              </span>
+            ) : (
+              <Link
+                href={`/best?sort=${currentSort}&page=${page - 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700"
+              >
+                Previous
+              </Link>
+            )}
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {page} of {totalPages}
+            </span>
+            {page >= totalPages ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-lg opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Next
+              </span>
+            ) : (
+              <Link
+                href={`/best?sort=${currentSort}&page=${page + 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700"
+              >
+                Next
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -32,14 +32,14 @@ export default function ResetPage() {
     startTransition(() => {
       resetPassword(values.email).then((data) => {
         setError(data?.error);
-        setSuccess(data?.success);
+        if (data?.success) setSuccess(data?.message);
       });
     });
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-dark-900">
-      <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <div className="w-full max-w-md space-y-8 p-8 bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
             Forgot your password?
@@ -62,7 +62,7 @@ export default function ResetPage() {
               autoComplete="email"
               disabled={isPending}
               required
-              className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+              className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-dark-900 focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
               placeholder="Email address"
             />
              {form.formState.errors.email && (
@@ -73,13 +73,13 @@ export default function ResetPage() {
           </div>
 
           {error && (
-            <div className="text-sm p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-md">
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
               {error}
             </div>
           )}
           
           {success && (
-            <div className="text-sm p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md">
+            <div className="text-sm p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg">
               {success}
             </div>
           )}
@@ -88,7 +88,7 @@ export default function ResetPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send reset email
             </button>

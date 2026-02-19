@@ -16,9 +16,18 @@ const AD_POSITIONS = {
 
 import { SortSelector } from '@/components/search/sort-selector';
 
-export default async function HomePage(props: { searchParams: Promise<{ sort?: string }> }) {
+const VIDEOS_PER_PAGE = 40;
+
+export default async function HomePage(props: { searchParams: Promise<{ sort?: string; page?: string }> }) {
   const searchParams = await props.searchParams;
   const sort = searchParams.sort || 'recent';
+  const page = Math.max(1, parseInt(searchParams.page || '1', 10) || 1);
+
+  // Get total count for pagination
+  const totalCount = await prisma.video.count({
+    where: { status: 'PUBLISHED' },
+  });
+  const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
 
   // Fetch published videos with creator info
   const videos = await prisma.video.findMany({
@@ -29,7 +38,6 @@ export default async function HomePage(props: { searchParams: Promise<{ sort?: s
       user: {
         select: {
           username: true,
-          // avatarUrl is currently nullable, but needed for VideoCard
           avatarUrl: true, 
         },
       },
@@ -37,7 +45,8 @@ export default async function HomePage(props: { searchParams: Promise<{ sort?: s
     orderBy: sort === 'popular' 
       ? { viewsCount: 'desc' }
       : { createdAt: 'desc' },
-    take: 40,
+    take: VIDEOS_PER_PAGE,
+    skip: (page - 1) * VIDEOS_PER_PAGE,
   });
 
   // Helper to inject ads into the grid
@@ -51,7 +60,7 @@ export default async function HomePage(props: { searchParams: Promise<{ sort?: s
              ...video,
              thumbnailUrl: video.thumbnailUrl || null,
              duration: video.duration || null,
-             orientation: (video.orientation as any) || null,
+             orientation: video.orientation || null,
              isPremium: video.isPremium
           }} 
         />
@@ -96,7 +105,7 @@ export default async function HomePage(props: { searchParams: Promise<{ sort?: s
       {/* Sticky Category Helper */}
       <CategoryPills />
       
-      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 py-4">
+      <div className="max-w-[1800px] mx-auto px-2 sm:px-4 py-4">
         {/* Top Ad */}
         <div className="mb-6 flex justify-center">
              <AdUnit 
@@ -164,12 +173,36 @@ export default async function HomePage(props: { searchParams: Promise<{ sort?: s
           </div>
         )}
 
-        {/* Load More/Pagination */}
-        {videos.length >= 40 && (
-          <div className="mt-8 text-center">
-            <button className="px-6 py-2.5 bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-200 font-medium rounded-full hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors text-sm">
-              Show more videos
-            </button>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-4">
+            {page <= 1 ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-full opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Previous
+              </span>
+            ) : (
+              <Link
+                href={`/?sort=${sort}&page=${page - 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-full transition-colors bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-700"
+              >
+                Previous
+              </Link>
+            )}
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {page} of {totalPages}
+            </span>
+            {page >= totalPages ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-full opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Next
+              </span>
+            ) : (
+              <Link
+                href={`/?sort=${sort}&page=${page + 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-full transition-colors bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-700"
+              >
+                Next
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -125,7 +125,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                 <Link
                                     key={tab.id}
                                     href={`/search?q=${encodeURIComponent(query)}&sort=${tab.id}`}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
                                         isActive 
                                         ? 'bg-white dark:bg-dark-600 text-gray-900 dark:text-white shadow-sm' 
                                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -182,7 +182,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <div className="mt-12 text-center">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Or browse by:</h3>
                 <div className="flex justify-center gap-4">
-                     <Link href="/new" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Newest Videos</Link>
+                     <Link href="/new" className="px-6 py-3 bg-xred-600 text-white rounded-lg hover:bg-xred-700 font-medium">Newest Videos</Link>
                      <Link href="/best" className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">Top Rated</Link>
                 </div>
             </div>

@@ -53,6 +53,33 @@ export class BunnyClient {
     return response.json();
   }
 
+  /**
+   * Delete a video from Bunny Stream.
+   * Returns true if deleted, false if not found (already deleted).
+   */
+  async deleteVideo(videoId: string): Promise<boolean> {
+    const response = await fetch(
+      `https://video.bunnycdn.com/library/${this.libraryId}/videos/${videoId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'AccessKey': this.apiKey,
+        },
+      }
+    );
+
+    if (response.status === 404) {
+      // Video already gone — not an error
+      return false;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete video from Bunny: ${response.status}`);
+    }
+
+    return true;
+  }
+
   getVideoUrl(videoId: string) {
     return `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
   }

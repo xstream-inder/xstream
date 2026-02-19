@@ -3,12 +3,20 @@
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { signUpSchema } from '@/lib/validations/auth';
+import { signUpRateLimiter } from '@/lib/redis';
+import { getClientIpHash } from '@/lib/utils/security';
 
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 
 export async function registerUser(formData: FormData) {
   try {
+    // Rate limiting
+    const ipHash = await getClientIpHash();
+    const { success: allowed } = await signUpRateLimiter.limit(ipHash);
+    if (!allowed) {
+      return { success: false, error: 'Too many signup attempts. Please try again later.' };
+    }
     const data = {
       email: formData.get('email') as string,
       username: formData.get('username') as string,

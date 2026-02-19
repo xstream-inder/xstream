@@ -32,7 +32,7 @@ export function UserMenu() {
 
   if (status === 'loading') {
     return (
-      <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse" />
+      <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-dark-700 animate-pulse" />
     );
   }
 
@@ -47,7 +47,7 @@ export function UserMenu() {
         </button>
         <button
           onClick={() => openModal('signup')}
-          className="px-4 py-2 text-sm font-medium text-white bg-xred-600 rounded-md hover:bg-xred-700"
+          className="px-4 py-2 text-sm font-medium text-white bg-xred-600 rounded-lg hover:bg-xred-700"
         >
           Sign up
         </button>
@@ -70,7 +70,7 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+        <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-dark-800 ring-1 ring-black ring-opacity-5 z-50">
           <div className="py-1">
             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
               <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -86,7 +86,7 @@ export function UserMenu() {
 
             <Link
               href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
             >
               Your Profile
@@ -95,7 +95,7 @@ export function UserMenu() {
             {session.user.role === 'CREATOR' || session.user.role === 'ADMIN' ? (
               <Link
                 href="/upload"
-                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
                 onClick={() => setIsOpen(false)}
               >
                 Upload Video
@@ -104,7 +104,7 @@ export function UserMenu() {
 
             <Link
               href="/studio"
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
             >
               Creator Studio
@@ -112,7 +112,7 @@ export function UserMenu() {
 
             <Link
               href="/settings"
-              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700"
               onClick={() => setIsOpen(false)}
             >
               Settings
@@ -121,7 +121,7 @@ export function UserMenu() {
             <div className="border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleSignOut}
-                className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-700"
               >
                 Sign out
               </button>

@@ -139,7 +139,7 @@ export default function CommentSection({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Add a comment..."
-                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-800 resize-none focus:outline-none focus:ring-2 focus:ring-xred-500"
                 rows={3}
                 maxLength={2000}
                 disabled={isSubmitting}
@@ -194,7 +194,7 @@ export default function CommentSection({
             <button
               onClick={loadMoreComments}
               disabled={isLoadingMore}
-              className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-gray-200 dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingMore ? "Loading..." : "Load More Comments"}
             </button>

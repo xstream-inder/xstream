@@ -10,16 +10,18 @@ export async function RelatedVideos({ videoId }: RelatedVideosProps) {
   const currentVideo = await prisma.video.findUnique({
     where: { id: videoId },
     select: {
-      tags: true, 
       userId: true,
       videoCategories: {
         select: { categoryId: true }
+      },
+      videoTags: {
+        select: { tagId: true }
       }
     }
   });
 
   const categoryIds = currentVideo?.videoCategories.map(vc => vc.categoryId) || [];
-  const tags = currentVideo?.tags || [];
+  const tagIds = currentVideo?.videoTags.map(vt => vt.tagId) || [];
   const authorId = currentVideo?.userId;
 
   // 2. Fetch related
@@ -35,7 +37,7 @@ export async function RelatedVideos({ videoId }: RelatedVideosProps) {
       id: { not: videoId }, // Exclude current
       OR: [
         { videoCategories: { some: { categoryId: { in: categoryIds } } } },
-        { tags: { hasSome: tags } },
+        ...(tagIds.length > 0 ? [{ videoTags: { some: { tagId: { in: tagIds } } } }] : []),
         { userId: authorId }
       ]
     },

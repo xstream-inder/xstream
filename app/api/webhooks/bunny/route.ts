@@ -1,8 +1,28 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+const BUNNY_WEBHOOK_SECRET = process.env.BUNNY_WEBHOOK_SECRET;
+const EXPECTED_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
+
 export async function POST(req: Request) {
   try {
+    // --- AUTHENTICATION ---
+    // Verify webhook secret via query parameter or custom header
+    const url = new URL(req.url);
+    const secretParam = url.searchParams.get('secret');
+    const secretHeader = req.headers.get('x-bunny-webhook-secret');
+    const providedSecret = secretParam || secretHeader;
+
+    if (!BUNNY_WEBHOOK_SECRET) {
+      console.error('BUNNY_WEBHOOK_SECRET is not configured');
+      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+    }
+
+    if (providedSecret !== BUNNY_WEBHOOK_SECRET) {
+      console.warn('Bunny webhook: invalid or missing secret');
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     
     // 1. Basic Validation
@@ -11,6 +31,13 @@ export async function POST(req: Request) {
     }
 
     const { VideoGuid, Status, VideoLibraryId } = body;
+
+    // Verify the webhook is from the expected Bunny library
+    if (EXPECTED_LIBRARY_ID && VideoLibraryId && String(VideoLibraryId) !== String(EXPECTED_LIBRARY_ID)) {
+      console.warn(`Bunny webhook: unexpected library ID ${VideoLibraryId}`);
+      return NextResponse.json({ error: "Invalid library" }, { status: 403 });
+    }
+
     const PULL_ZONE = process.env.NEXT_PUBLIC_BUNNY_PULL_ZONE;
     const API_KEY = process.env.BUNNY_API_KEY;
 
@@ -61,7 +88,7 @@ export async function POST(req: Request) {
 
       // 4. Update DB (Safely)
       try {
-        await prisma.video.update({
+        const updatedVideo = await prisma.video.update({
           where: { bunnyVideoId: VideoGuid },
           data: {
             status: "PUBLISHED",
@@ -71,8 +98,13 @@ export async function POST(req: Request) {
             hlsUrl: hlsUrl,
             resolutions: resolutions, // Important for player quality selector
           },
+          select: { id: true, userId: true, title: true },
         });
         console.log(`✅ Published Video: ${VideoGuid}`);
+
+        // Notify subscribers of new upload
+        const { notifySubscribersOfNewVideo } = await import('@/server/actions/notifications');
+        notifySubscribersOfNewVideo(updatedVideo.userId, updatedVideo.id, updatedVideo.title).catch(() => {});
       } catch (dbError) {
         // If RecordNotFound, it means video was deleted during processing.
         console.warn(`⚠️ Video record not found for update (likely deleted): ${VideoGuid}`);

@@ -39,7 +39,7 @@ export default function ContactPage() {
             We've received your message and will get back to you within 24-48 hours.
           </p>
           <div className="flex flex-col space-y-3">
-             <Link href="/" className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-xred-600 border border-transparent rounded-md hover:bg-xred-700">
+             <Link href="/" className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-xred-600 border border-transparent rounded-lg hover:bg-xred-700">
                Return Home
              </Link>
              <button onClick={() => window.location.reload()} className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
@@ -125,7 +125,7 @@ export default function ContactPage() {
           <form action={formAction} className="space-y-6">
             
             {state.message && !state.success && (
-              <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
                 Error: {state.message}
               </div>
             )}
@@ -140,7 +140,7 @@ export default function ContactPage() {
                   name="name"
                   id="name"
                   required
-                  className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
+                  className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
                   placeholder="Your Name"
                 />
               </div>
@@ -156,7 +156,7 @@ export default function ContactPage() {
                   name="email"
                   id="email"
                   required
-                  className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
+                  className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
                   placeholder="you@example.com"
                 />
               </div>
@@ -170,7 +170,7 @@ export default function ContactPage() {
                 <select
                   id="subject"
                   name="subject"
-                  className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
+                  className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
                 >
                   <option value="general">General Inquiry</option>
                   <option value="billing">Billing & Subscription</option>
@@ -192,7 +192,7 @@ export default function ContactPage() {
                   name="message"
                   rows={4}
                   required
-                  className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
+                  className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 bg-white dark:bg-dark-700 text-gray-900 dark:text-white sm:text-sm p-3 border"
                   placeholder="How can we help you?"
                 />
               </div>
@@ -202,7 +202,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-xred-600 hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-xred-600 hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
               >
                 {isPending ? 'Sending...' : 'Send Message'}
               </button>

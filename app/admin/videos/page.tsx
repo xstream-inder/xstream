@@ -34,7 +34,7 @@ export default async function AdminVideosPage(props: AdminVideosPageProps) {
         </div>
         
         <VideoList 
-          initialVideos={videos as any[]} // Type assertion/mapping might be needed if Prisma types mismatch slightly 
+          initialVideos={videos}
           currentPage={page}
           totalPages={pages}
         />

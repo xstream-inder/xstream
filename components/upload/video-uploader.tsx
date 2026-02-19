@@ -5,6 +5,8 @@ import * as tus from 'tus-js-client';
 import { createUploadSignature } from '@/server/actions/bunny';
 import { finalizeUpload } from '@/server/actions/video';
 
+import { VideoOrientation } from '@prisma/client';
+
 interface UploadProgress {
   bytesUploaded: number;
   bytesTotal: number;
@@ -14,7 +16,7 @@ interface UploadProgress {
 interface VideoMetadata {
   title: string;
   description: string;
-  orientation: string;
+  orientation: VideoOrientation;
   isPremium: boolean;
   selectedModels: string[];
   newModelNames: string[];
@@ -194,7 +196,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
             const result = await finalizeUpload(signature.videoId, {
               title: metadata.title,
               description: metadata.description || undefined,
-              orientation: metadata.orientation as any,
+              orientation: metadata.orientation,
               isPremium: metadata.isPremium,
               modelIds: metadata.selectedModels,
               newModelNames: metadata.newModelNames, // Pass new models
@@ -279,7 +281,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
               onChange={(e) => setMetadata(prev => ({ ...prev, title: e.target.value }))}
               disabled={uploading}
               placeholder="Enter a descriptive title"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-xred-500 disabled:opacity-50"
               maxLength={200}
             />
           </div>
@@ -298,7 +300,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
               disabled={uploading}
               placeholder="Add a description to help viewers find your video"
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-xred-500 disabled:opacity-50"
             />
           </div>
           
@@ -335,7 +337,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
               onChange={(e) => setMetadata(prev => ({ ...prev, tags: e.target.value }))}
               disabled={uploading}
               placeholder="teen, blonde, outdoor, pov"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50 mb-2"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-xred-500 disabled:opacity-50 mb-2"
             />
             {availableTags.length > 0 && (
               <div className="flex flex-wrap gap-2 text-sm">
@@ -345,7 +347,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
                      key={tag.id}
                      type="button"
                      onClick={() => addTag(tag.name)}
-                     className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-gray-700 dark:text-gray-300 transition-colors"
+                     className="px-2 py-0.5 bg-gray-100 dark:bg-dark-700 hover:bg-gray-200 dark:hover:bg-dark-600 rounded text-gray-700 dark:text-gray-300 transition-colors"
                    >
                      {tag.name}
                    </button>
@@ -367,9 +369,9 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
                     name="orientation"
                     value={opt}
                     checked={metadata.orientation === opt}
-                    onChange={(e) => setMetadata(prev => ({ ...prev, orientation: e.target.value }))}
+                    onChange={(e) => setMetadata(prev => ({ ...prev, orientation: e.target.value as VideoOrientation }))}
                     disabled={uploading}
-                    className="form-radio text-blue-600 focus:ring-blue-500 h-4 w-4"
+                    className="form-radio text-xred-600 focus:ring-xred-500 h-4 w-4"
                   />
                   <span className="ml-2 text-gray-700 dark:text-gray-300 capitalize">{opt.toLowerCase()}</span>
                 </label>
@@ -382,7 +384,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Categories
             </label>
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-md">
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg">
               {categories.map((category) => (
                 <button
                   key={category.id}
@@ -390,8 +392,8 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
                   onClick={() => toggleCategory(category.id)}
                   className={`px-3 py-1 text-sm rounded-full transition-colors ${
                     metadata.selectedCategories.includes(category.id)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'bg-xred-600 text-white'
+                      : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
                   }`}
                 >
                   {category.name}
@@ -405,7 +407,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Models
             </label>
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-md mb-2">
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-2">
               {models.map((model) => (
                 <button
                   key={model.id}
@@ -414,7 +416,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
                   className={`px-3 py-1 text-sm rounded-full transition-colors ${
                     metadata.selectedModels.includes(model.id)
                       ? 'bg-pink-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      : 'bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600'
                   }`}
                 >
                   {model.stageName}
@@ -438,13 +440,13 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
                   onChange={(e) => setModelInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomModel())}
                   placeholder="Add new model name..."
-                  className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white"
                 />
                 <button 
                   type="button" 
                   onClick={addCustomModel}
                   disabled={!modelInput.trim()}
-                  className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md text-gray-800 dark:text-gray-200 disabled:opacity-50"
+                  className="px-3 py-1.5 text-sm bg-gray-200 dark:bg-dark-700 hover:bg-gray-300 dark:hover:bg-dark-600 rounded-lg text-gray-800 dark:text-gray-200 disabled:opacity-50"
                 >
                   Add
                 </button>
@@ -466,7 +468,7 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
             accept="video/*"
             onChange={handleFileSelect}
             disabled={uploading}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed dark:file:bg-blue-900 dark:file:text-blue-200"
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-xred-700 hover:file:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed dark:file:bg-red-900 dark:file:text-red-200"
           />
           {file && (
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -484,9 +486,9 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
               </span>
               <span>{progress.percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+            <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-2.5">
               <div
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                className="bg-xred-600 h-2.5 rounded-full transition-all duration-300"
                 style={{ width: `${progress.percentage}%` }}
               />
             </div>
@@ -498,14 +500,14 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
+            <p>{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {uploadedVideoId && (
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <p className="text-sm text-green-800 dark:text-green-200 mb-2">
               ✅ Upload successful! Your video is now being processed.
             </p>
@@ -524,14 +526,14 @@ export function VideoUploader({ models, categories, availableTags = [], isAdmin 
             <button
               onClick={handleUpload}
               disabled={!file || !metadata.title.trim()}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-xred-600 text-white font-medium rounded-lg hover:bg-xred-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
             >
               Upload Video
             </button>
           ) : (
             <button
               onClick={handleCancel}
-              className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors"
+              className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
             >
               Cancel Upload
             </button>

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import Image from 'next/image';
+import { formatNumber } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +24,8 @@ export default async function ModelsPage() {
     take: 100,
   });
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -73,9 +68,9 @@ export default async function ModelsPage() {
                 href={`/model/${model.slug}`}
                 className="group"
               >
-                <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-white dark:bg-dark-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {/* Avatar */}
-                  <div className="relative aspect-square bg-gray-200 dark:bg-gray-700">
+                  <div className="relative aspect-square bg-gray-200 dark:bg-dark-700">
                     {model.avatarUrl ? (
                       <Image
                         src={model.avatarUrl}

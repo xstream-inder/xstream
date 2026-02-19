@@ -3,6 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth-helper';
 import { revalidatePath } from 'next/cache';
+import {
+  createCategorySchema,
+  createTagSchema,
+  createModelSchema,
+  uuidSchema,
+} from '@/lib/validations/schemas';
 
 // Middleware for role check
 async function checkAdmin() {
@@ -41,7 +47,14 @@ export async function getAdminStats() {
 // Categories
 export async function createCategory(name: string, slug?: string) {
   await checkAdmin();
-  const finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  // Validate input
+  const parsed = createCategorySchema.safeParse({ name, slug });
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message || 'Invalid input' };
+  }
+
+  const finalSlug = parsed.data.slug || parsed.data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   
   try {
     const category = await prisma.category.create({
@@ -56,7 +69,11 @@ export async function createCategory(name: string, slug?: string) {
 
 export async function deleteCategory(id: string) {
   await checkAdmin();
-  await prisma.category.delete({ where: { id } });
+  const parsedId = uuidSchema.safeParse(id);
+  if (!parsedId.success) {
+    return { success: false, error: 'Invalid category ID' };
+  }
+  await prisma.category.delete({ where: { id: parsedId.data } });
   revalidatePath('/admin/categories');
   return { success: true };
 }
@@ -64,7 +81,14 @@ export async function deleteCategory(id: string) {
 // Tags
 export async function createTag(name: string) {
   await checkAdmin();
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  // Validate input
+  const parsed = createTagSchema.safeParse({ name });
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message || 'Invalid input' };
+  }
+
+  const slug = parsed.data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   
   try {
     const tag = await prisma.tag.create({
@@ -79,7 +103,11 @@ export async function createTag(name: string) {
 
 export async function deleteTag(id: string) {
   await checkAdmin();
-  await prisma.tag.delete({ where: { id } });
+  const parsedId = uuidSchema.safeParse(id);
+  if (!parsedId.success) {
+    return { success: false, error: 'Invalid tag ID' };
+  }
+  await prisma.tag.delete({ where: { id: parsedId.data } });
   revalidatePath('/admin/tags');
   return { success: true };
 }
@@ -87,7 +115,14 @@ export async function deleteTag(id: string) {
 // Models
 export async function createModel(stageName: string, gender: 'FEMALE' | 'MALE' | 'TRANS_FEMALE' | 'TRANS_MALE' | 'NON_BINARY' = 'FEMALE') {
   await checkAdmin();
-  const slug = stageName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  // Validate input
+  const parsed = createModelSchema.safeParse({ stageName, gender });
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.errors[0]?.message || 'Invalid input' };
+  }
+
+  const slug = parsed.data.stageName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   
   try {
     const model = await prisma.model.create({

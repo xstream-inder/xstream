@@ -9,7 +9,15 @@ export const metadata = {
   description: 'Watch the latest uploaded videos on eddythedaddy.',
 };
 
-export default async function NewVideosPage() {
+const VIDEOS_PER_PAGE = 36;
+
+export default async function NewVideosPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || '1', 10) || 1);
+
+  const totalCount = await prisma.video.count({ where: { status: 'PUBLISHED' } });
+  const totalPages = Math.max(1, Math.ceil(totalCount / VIDEOS_PER_PAGE));
+
   const videos = await prisma.video.findMany({
     where: {
       status: 'PUBLISHED',
@@ -17,7 +25,8 @@ export default async function NewVideosPage() {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 60,
+    take: VIDEOS_PER_PAGE,
+    skip: (page - 1) * VIDEOS_PER_PAGE,
     include: {
       user: {
         select: {
@@ -35,7 +44,7 @@ export default async function NewVideosPage() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white capitalize flex items-center gap-2">
                 New Videos
                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-dark-800 px-2 py-1 rounded-full">
-                    {videos.length}+
+                    {totalCount} videos
                 </span>
             </h1>
         </div>
@@ -68,6 +77,39 @@ export default async function NewVideosPage() {
             {videos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-4">
+            {page <= 1 ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-lg opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Previous
+              </span>
+            ) : (
+              <Link
+                href={`/new?page=${page - 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700"
+              >
+                Previous
+              </Link>
+            )}
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {page} of {totalPages}
+            </span>
+            {page >= totalPages ? (
+              <span className="px-5 py-2.5 text-sm font-medium rounded-lg opacity-50 bg-gray-100 dark:bg-dark-800 text-gray-400 cursor-default">
+                Next
+              </span>
+            ) : (
+              <Link
+                href={`/new?page=${page + 1}`}
+                className="px-5 py-2.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700"
+              >
+                Next
+              </Link>
+            )}
           </div>
         )}
       </div>

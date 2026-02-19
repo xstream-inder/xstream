@@ -17,9 +17,9 @@ export const authConfig = {
     async jwt({ token, user }: { token: JWT; user: User }) {
       if (user) {
         token.id = user.id;
-        token.username = (user as any).username;
-        token.role = (user as any).role;
-        token.avatarUrl = (user as any).avatarUrl;
+        token.username = user.username;
+        token.role = user.role;
+        token.avatarUrl = user.avatarUrl;
       }
       return token;
     },
@@ -27,7 +27,7 @@ export const authConfig = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.username = token.username as string;
-        session.user.role = token.role as any;
+        session.user.role = token.role;
         session.user.avatarUrl = token.avatarUrl as string | null;
       }
       return session;

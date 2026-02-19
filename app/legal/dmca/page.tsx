@@ -61,7 +61,7 @@ export default function DMCAPage() {
             <form action={formAction} className="space-y-6">
               
               {state.message && !state.success && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md">
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
                   {state.message}
                 </div>
               )}
@@ -77,7 +77,7 @@ export default function DMCAPage() {
                       name="fullName"
                       id="fullName"
                       required
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                     {state.errors?.fullName && <p className="mt-1 text-sm text-red-600">{state.errors.fullName}</p>}
                   </div>
@@ -93,7 +93,7 @@ export default function DMCAPage() {
                       name="email"
                       id="email"
                       required
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                      {state.errors?.email && <p className="mt-1 text-sm text-red-600">{state.errors.email}</p>}
                   </div>
@@ -108,7 +108,7 @@ export default function DMCAPage() {
                       type="tel"
                       name="phone"
                       id="phone"
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export default function DMCAPage() {
                       name="address"
                       rows={3}
                       required
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                      {state.errors?.address && <p className="mt-1 text-sm text-red-600">{state.errors.address}</p>}
                   </div>
@@ -140,7 +140,7 @@ export default function DMCAPage() {
                       id="contentUrl"
                       required
                       placeholder="https://eddythedaddy.com/video/..."
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                      {state.errors?.contentUrl && <p className="mt-1 text-sm text-red-600">{state.errors.contentUrl}</p>}
                   </div>
@@ -156,7 +156,7 @@ export default function DMCAPage() {
                       name="description"
                       rows={4}
                       required
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                       placeholder="Please describe how the content infringes upon your copyright..."
                     />
                      {state.errors?.description && <p className="mt-1 text-sm text-red-600">{state.errors.description}</p>}
@@ -193,7 +193,7 @@ export default function DMCAPage() {
                       name="signature"
                       id="signature"
                       required
-                      className="block w-full rounded-md border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
+                      className="block w-full rounded-lg border-gray-300 dark:border-dark-600 shadow-sm focus:border-xred-500 focus:ring-xred-500 dark:bg-dark-700 dark:text-white sm:text-sm p-2 border"
                     />
                      {state.errors?.signature && <p className="mt-1 text-sm text-red-600">{state.errors.signature}</p>}
                   </div>
@@ -204,7 +204,7 @@ export default function DMCAPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="bg-xred-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 disabled:opacity-50"
+                  className="bg-xred-600 border border-transparent rounded-lg shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-xred-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-xred-500 disabled:opacity-50"
                 >
                   {isPending ? 'Submitting...' : 'Submit Notice'}
                 </button>
