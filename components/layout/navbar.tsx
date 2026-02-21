@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { UserMenu } from '@/components/auth/user-menu';
 import { useSidebar } from '@/components/providers/sidebar-provider';
 import { useRouter } from 'next/navigation';
@@ -40,8 +41,16 @@ export function Navbar() {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-1">
-              <span className="text-2xl font-black tracking-tighter text-gray-900 dark:text-white">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <Image
+                src="/image/xstream-logo.png"
+                alt="eddythedaddy"
+                width={36}
+                height={36}
+                className="rounded-lg"
+                priority
+              />
+              <span className="hidden sm:inline text-xl font-black tracking-tighter text-gray-900 dark:text-white">
                 eddythe<span className="text-xred-600">daddy</span>
               </span>
             </Link>

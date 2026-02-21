@@ -45,16 +45,16 @@ export function UserMenu() {
 
   if (!session) {
     return (
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           onClick={() => openModal('signin')}
-          className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
         >
           Sign in
         </button>
         <button
           onClick={() => openModal('signup')}
-          className="px-4 py-2 text-sm font-medium text-white bg-xred-600 rounded-lg hover:bg-xred-700"
+          className="px-3 py-1.5 text-sm font-medium text-white bg-xred-600 rounded-lg hover:bg-xred-700 transition-colors"
         >
           Sign up
         </button>

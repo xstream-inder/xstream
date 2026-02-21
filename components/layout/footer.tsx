@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,7 +10,14 @@ export function Footer() {
         <nav aria-label="Footer navigation" className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand & Info */}
           <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center gap-1 mb-4">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <Image
+                src="/image/xstream-logo.png"
+                alt="eddythedaddy"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
               <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white">
                 eddythe<span className="text-xred-600">daddy</span>
               </span>

@@ -28,6 +28,26 @@ export default {
       aspectRatio: {
         'video': '16 / 9',
       },
+      keyframes: {
+        'splash-logo': {
+          '0%': { opacity: '0', transform: 'scale(0.5)' },
+          '50%': { opacity: '1', transform: 'scale(1.05)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'splash-text': {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'splash-bar': {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
+      },
+      animation: {
+        'splash-logo': 'splash-logo 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'splash-text': 'splash-text 0.5s ease-out 0.4s both',
+        'splash-bar': 'splash-bar 1.6s ease-in-out 0.3s both',
+      },
     },
   },
   plugins: [

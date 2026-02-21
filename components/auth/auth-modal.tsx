@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from  'next/navigation';
 import { registerUser } from '@/server/actions/auth';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 export function AuthModal() {
@@ -122,7 +123,17 @@ export function AuthModal() {
 
           {/* Header */}
           <div className="px-8 pt-8 pb-6 text-center">
-            <h2 className="text-3xl font-black tracking-tighter text-gray-900 dark:text-white mb-2" id="auth-modal-title">
+            <div className="flex justify-center mb-3">
+              <Image
+                src="/image/xstream-logo.png"
+                alt="eddythedaddy"
+                width={56}
+                height={56}
+                className="rounded-xl"
+                priority
+              />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tighter text-gray-900 dark:text-white mb-2" id="auth-modal-title">
               eddythe<span className="text-xred-600">daddy</span>
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">

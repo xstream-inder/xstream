@@ -12,6 +12,7 @@ import { AuthModal } from '@/components/auth/auth-modal';
 import { AuthUrlListener } from '@/components/auth/auth-url-listener';
 import { ConfirmDialogProvider } from '@/components/ui/confirm-dialog';
 import { Footer } from '@/components/layout/footer';
+import { SplashScreen } from '@/components/layout/splash-screen';
 import { Suspense } from 'react';
 import { AdUnit } from '@/components/ads/ad-unit';
 import { adConfig } from '@/lib/ads';
@@ -52,6 +53,7 @@ export default async function RootLayout({
                 <ConfirmDialogProvider>
                 <AgeGateModal />
                 <CookieConsent />
+                <SplashScreen />
                 <Navbar />
                 <Suspense fallback={null}>
                   <AuthUrlListener />

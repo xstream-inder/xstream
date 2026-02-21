@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 const AGE_GATE_KEY = 'age_verified';
@@ -36,7 +37,19 @@ export function AgeGateModal() {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4" role="alertdialog" aria-modal="true" aria-labelledby="age-gate-title" ref={dialogRef}>
-      <div className="bg-white dark:bg-dark-800 rounded-lg max-w-md w-full p-8 text-center">
+      <div className="bg-white dark:bg-dark-800 rounded-lg max-w-md w-full p-6 sm:p-8 text-center">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <Image
+            src="/image/xstream-logo.png"
+            alt="eddythedaddy"
+            width={64}
+            height={64}
+            className="rounded-xl"
+            priority
+          />
+        </div>
+
         {/* Warning Icon */}
         <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
           <svg
