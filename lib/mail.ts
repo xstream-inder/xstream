@@ -38,7 +38,7 @@ export const sendPasswordResetEmail = async (
   const resetLink = `${domain}/auth/new-password?token=${token}`;
 
   await resend.emails.send({
-    from: 'onboarding@resend.dev',
+    from: 'noreply@contact.eddythedaddy.com',
     to: email,
     subject: 'Reset your password - eddythedaddy',
     html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`
