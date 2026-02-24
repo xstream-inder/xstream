@@ -58,7 +58,7 @@ export default async function PremiumPage() {
 
         <div className="mt-8">
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-               $9.99 <span className="text-lg font-medium text-gray-500">/ month</span>
+               $9.00<span className="text-lg font-medium text-gray-500">/ month</span>
             </div>
           <form action={createCheckoutSession}>
             <button
