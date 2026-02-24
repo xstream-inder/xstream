@@ -13,7 +13,7 @@ export const stripe = new Stripe(STRIPE_SECRET_KEY || 'null', {
 
 const premiumPriceId = process.env.STRIPE_PREMIUM_PRICE_ID;
 if (!premiumPriceId && process.env.NODE_ENV === 'production') {
-  throw new Error('STRIPE_PREMIUM_PRICE_ID environment variable is required in production');
+  throw new Error('STRIPE_PREMIUM_PRICE_ID environment variable is  required in production');
 }
 
 export const STRIPE_PREMIUM_PRICE_ID = premiumPriceId || ''; 

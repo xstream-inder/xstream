@@ -11,7 +11,7 @@ const WINDOW_DURATION = '1 m';
 
 if (!UPSTASH_URL || !UPSTASH_TOKEN) {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('Missing Upstash Redis credentials (UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)');
+    throw new Error('Missing Upstash Redis credentials  (UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)');
   }
   console.warn('⚠️ Upstash Redis not configured - rate limiting, likes, and views will use a mock client');
 }
