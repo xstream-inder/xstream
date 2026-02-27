@@ -1,3 +1,4 @@
+import { log } from 'console';
 import crypto from 'crypto';
 
 const BUNNY_STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE!;
@@ -55,6 +56,8 @@ export async function uploadToBunnyStorage(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    console.log(`Bunny Storage upload failed (${response.status}): ${text}`);
+    
     throw new Error(`Bunny Storage upload failed (${response.status}): ${text}`);
   }
 
